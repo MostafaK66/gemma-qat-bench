@@ -36,8 +36,8 @@ dev = [
 gemma-qat-bench = "gemma_qat_bench.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/<your-username>/gemma-qat-bench"
-Repository = "https://github.com/<your-username>/gemma-qat-bench"
+Homepage = "https://github.com/MostafaK66/gemma-qat-bench"
+Repository = "https://github.com/MostafaK66/gemma-qat-bench"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/gemma_qat_bench"]
