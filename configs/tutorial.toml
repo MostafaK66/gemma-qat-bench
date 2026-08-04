@@ -1,0 +1,62 @@
+# Reproduces the DataCamp "Gemma 4 QAT" tutorial: non-QAT vs QAT, UD-Q4_K_XL.
+# Copy this file, tweak, and pass it with:  gemma-qat-bench --config my.toml bench
+
+models_root = "models"
+results_dir = "results"
+capture_vram = true
+
+[server]
+# Produced by `gemma-qat-bench build` (or the scripts/build_llama_cpp.sh helper).
+binary_path = "third_party/llama.cpp/build/bin/llama-server"
+host = "127.0.0.1"
+port = 8001
+ctx_size = 8192
+n_gpu_layers = 99          # ignored on a CPU-only build; set 0 to be explicit
+startup_timeout_s = 180.0
+# extra_args = ["--flash-attn", "on"]   # e.g. enable flash attention
+
+[sampling]
+temperature = 1.0
+top_p = 0.95
+top_k = 64
+max_tokens = 512
+# Gemma 4 is a *thinking* model. Without this, the answer can land in
+# `reasoning_content` and `content` comes back empty. Uncomment to disable
+# reasoning (throughput numbers are unaffected either way):
+# [sampling.extra_body.chat_template_kwargs]
+# thinking = false
+
+[benchmark]
+prompt = "Explain why quantization-aware training is useful for running LLMs on consumer GPUs."
+system_prompt = "You are a helpful local AI assistant."
+n_runs = 3
+warmup_runs = 1
+request_timeout_s = 300.0
+
+[build]
+repo_url = "https://github.com/ggml-org/llama.cpp"
+source_dir = "third_party/llama.cpp"
+# use_cuda is auto-detected when omitted; set explicitly to force it:
+# use_cuda = true
+
+# --- Models --------------------------------------------------------------- #
+# NOTE: the non-QAT repo id uses a lowercase 'b' (gemma-4-12b-...); the
+# tutorial's capital-B spelling does not match the case-sensitive HF repo.
+
+[[models]]
+key = "non-qat"
+display_name = "Gemma 4 12B IT (non-QAT)"
+repo_id = "unsloth/gemma-4-12b-it-GGUF"
+local_dir = "models/gemma-4-12b-it-GGUF"
+is_qat = false
+include_patterns = ["*UD-Q4_K_XL*", "*mmproj-BF16*"]
+gguf_pattern = "*UD-Q4_K_XL*.gguf"
+
+[[models]]
+key = "qat"
+display_name = "Gemma 4 12B IT (QAT)"
+repo_id = "unsloth/gemma-4-12B-it-qat-GGUF"
+local_dir = "models/gemma-4-12B-it-qat-GGUF"
+is_qat = true
+include_patterns = ["*UD-Q4_K_XL*", "*mmproj-BF16*"]
+gguf_pattern = "*UD-Q4_K_XL*.gguf"

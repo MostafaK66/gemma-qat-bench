@@ -1,0 +1,69 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "gemma-qat-bench"
+version = "0.1.0"
+description = "Benchmark QAT vs non-QAT GGUF models locally with llama.cpp."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Mostafa Karimzadeh", email = "mos.karimzadeh@gmail.com" }]
+keywords = ["llm", "quantization", "qat", "llama.cpp", "gguf", "gemma", "benchmark"]
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "requests>=2.31",
+    "huggingface_hub>=0.23",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "ruff>=0.4",
+    "mypy>=1.9",
+    "types-requests>=2.31",
+]
+
+[project.scripts]
+gemma-qat-bench = "gemma_qat_bench.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/<your-username>/gemma-qat-bench"
+Repository = "https://github.com/<your-username>/gemma-qat-bench"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/gemma_qat_bench"]
+
+[tool.pytest.ini_options]
+# Lets pytest and PyCharm import the package straight from src/ without an install.
+pythonpath = ["src", "tests"]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 90
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "S"]
+# S603/S607: subprocess calls are intentional and use validated, non-shell args.
+ignore = ["S603", "S607"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]  # asserts are expected in tests
+
+[tool.mypy]
+python_version = "3.11"
+packages = ["gemma_qat_bench"]
+mypy_path = "src"
+strict = true
+warn_unused_ignores = true
