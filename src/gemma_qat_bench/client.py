@@ -5,6 +5,7 @@ injection, which lets tests pass a fake session and exercise every branch
 without a network or a running server.
 """
 
+
 from __future__ import annotations
 
 import time
