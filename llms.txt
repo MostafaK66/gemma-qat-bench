@@ -24,7 +24,7 @@ model-quality benchmark.
 - `.context/README.md` — how to use local context, prompts, and skills
 - `.context/world-state-TEMPLATE.md` — template for optional gitignored working state
 - `.context/prompts/*.prompt.md` — reusable task prompts
-- `.context/skills/*/SKILL.md` — task-specific engineering procedures
+- `.github/skills/*/SKILL.md` — task-specific engineering procedures
 
 ## Repository map
 ```text

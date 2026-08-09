@@ -4,7 +4,7 @@ applyTo: "README.md,docs/**/*.md,.context/**/*.md,configs/**/*.toml"
 
 # Documentation and configuration instructions
 
-- Follow `AGENTS.md` and `.context/skills/documentation/SKILL.md` for documentation changes.
+- Follow `AGENTS.md` and `.github/skills/documentation/SKILL.md` for documentation changes.
 - Ground documentation in the actual code, CLI help, config parser, tests, scripts, and CI.
 - Keep commands copy-pasteable and filenames/paths/flags exact.
 - Do not invent supported platforms, benchmark numbers, API behavior, requirements, or configuration keys.

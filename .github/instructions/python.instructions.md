@@ -4,7 +4,7 @@ applyTo: "src/**/*.py"
 
 # Production Python instructions
 
-- Follow `AGENTS.md` and `.context/skills/python-engineering/SKILL.md`.
+- Follow `AGENTS.md` and `.github/skills/python-engineering/SKILL.md`.
 - Keep each module focused on one responsibility and preserve existing architectural boundaries.
 - Keep CLI/API/job entry points thin; move substantive logic into focused application/domain modules.
 - Use type hints at public and important internal boundaries.

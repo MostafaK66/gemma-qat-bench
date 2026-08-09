@@ -8,7 +8,7 @@ Refactor: `<target>`
 
 ## Rules
 
-1. Read `AGENTS.md` and `.context/skills/python-engineering/SKILL.md`.
+1. Read `AGENTS.md` and `.github/skills/python-engineering/SKILL.md`.
 2. Identify the observable behavior that must remain unchanged.
 3. Inspect existing tests first. Add characterization tests if the behavior is not safely
    covered.

@@ -8,7 +8,7 @@ Implement: `<feature/request>`
 
 ## Required workflow
 
-1. Read `AGENTS.md`, `llms.txt`, and `.context/skills/feature-implementation/SKILL.md`.
+1. Read `AGENTS.md`, `llms.txt`, and `.github/skills/feature-implementation/SKILL.md`.
 2. Inspect the relevant source, tests, config, CLI/API surface, docs, and CI/tooling.
 3. Summarize the current behavior and identify the module that should own the change.
 4. Separate confirmed requirements from assumptions. Ask only the smallest necessary

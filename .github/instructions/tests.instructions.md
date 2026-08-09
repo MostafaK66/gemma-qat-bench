@@ -4,7 +4,7 @@ applyTo: "tests/**/*.py"
 
 # Test instructions
 
-- Follow `AGENTS.md` and `.context/skills/testing/SKILL.md`.
+- Follow `AGENTS.md` and `.github/skills/testing/SKILL.md`.
 - Keep unit tests deterministic, fast, and offline by default.
 - Test observable behavior and meaningful boundaries rather than private implementation details.
 - Mirror important source-module responsibilities with corresponding `test_<module>.py` coverage.

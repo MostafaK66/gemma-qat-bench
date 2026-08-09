@@ -8,7 +8,7 @@ Use this prompt to review a branch, diff, pull request, module, or proposed impl
 
 ## Required review order
 
-Read `AGENTS.md` and `.context/skills/code-review/SKILL.md`, then inspect the changed
+Read `AGENTS.md` and `.github/skills/code-review/SKILL.md`, then inspect the changed
 code plus the surrounding contracts and tests.
 
 Prioritize findings by:

@@ -5,7 +5,7 @@ These instructions are always applicable to work in this repository.
 1. Read `AGENTS.md` before making non-trivial changes. Treat it as the engineering and quality contract.
 2. Read `llms.txt` for repository orientation, then inspect the relevant source, tests, configuration, CI, and documentation before editing.
 3. If `.context/world-state.md` exists, use it only as current local working context; never invent missing state and never put secrets in it.
-4. For specialized work, load the matching `.context/skills/<skill>/SKILL.md` and follow its workflow.
+4. For specialized work, load the matching `.github/skills/<skill>/SKILL.md` and follow its workflow.
 5. Reuse the patterns already present in the repository before inventing a new abstraction.
 6. Keep production code under `src/<package>/` and tests under `tests/`. Preserve clean responsibility boundaries; do not force every future project to use the same filenames when the domain differs.
 7. Keep CLI/API/job entry points thin. Put business logic, orchestration, integrations, metrics, reporting, and configuration in focused modules with explicit responsibilities.
@@ -24,12 +24,12 @@ These instructions are always applicable to work in this repository.
 
 Useful task routing:
 
-- project structure/scaffolding → `.context/skills/project-architecture/SKILL.md`
-- Python implementation/refactoring → `.context/skills/python-engineering/SKILL.md`
-- feature work → `.context/skills/feature-implementation/SKILL.md`
-- tests → `.context/skills/testing/SKILL.md`
-- debugging → `.context/skills/debugging/SKILL.md`
-- review → `.context/skills/code-review/SKILL.md`
-- documentation → `.context/skills/documentation/SKILL.md`
-- benchmarking → `.context/skills/benchmarking/SKILL.md`
+- project structure/scaffolding → `.github/skills/project-architecture/SKILL.md`
+- Python implementation/refactoring → `.github/skills/python-engineering/SKILL.md`
+- feature work → `.github/skills/feature-implementation/SKILL.md`
+- tests → `.github/skills/testing/SKILL.md`
+- debugging → `.github/skills/debugging/SKILL.md`
+- review → `.github/skills/code-review/SKILL.md`
+- documentation → `.github/skills/documentation/SKILL.md`
+- benchmarking → `.github/skills/benchmarking/SKILL.md`
 

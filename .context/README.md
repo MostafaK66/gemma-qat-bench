@@ -77,7 +77,7 @@ commands, and architectural boundaries.
 
 ### 3. Skills
 
-`.context/skills/*/SKILL.md` files contain detailed procedures for specialized work.
+`.github/skills/*/SKILL.md` files contain detailed procedures for specialized work.
 The root `AGENTS.md` has a routing table telling agents which skill to load.
 
 Use skills when the task matches their description; do not load every skill for every
@@ -105,7 +105,7 @@ agent customizations. For this repository:
    `.github/copilot-instructions.md` is applied.
 4. Add or manage the reusable prompt files from `.context/prompts/` if your Copilot
    version requires explicit registration.
-5. Add `.context/skills/` as the project skill location when the Customizations UI allows
+5. Add `.github/skills/` as the project skill location when the Customizations UI allows
    a workspace skills directory.
 6. Keep customizations at **Workspace** scope for project-specific behavior; use
    **Personal** scope only for preferences you want across unrelated repositories.

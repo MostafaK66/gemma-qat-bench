@@ -12,7 +12,7 @@ unexpected behavior.
 
 ## Required workflow
 
-1. Read `AGENTS.md`, `llms.txt`, and `.context/skills/debugging/SKILL.md`.
+1. Read `AGENTS.md`, `llms.txt`, and `.github/skills/debugging/SKILL.md`.
 2. Reproduce the problem or inspect the strongest available evidence before changing
    code.
 3. Separate symptoms from root cause.

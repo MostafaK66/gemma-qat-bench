@@ -7,7 +7,7 @@ architectural area.
 
 Design a production-quality project structure that is simple, testable, maintainable,
 and appropriate for the actual domain. Use `AGENTS.md` and
-`.context/skills/project-architecture/SKILL.md` as the governing standards.
+`.github/skills/project-architecture/SKILL.md` as the governing standards.
 
 ## Instructions
 

@@ -19,7 +19,7 @@ Before making a non-trivial change, load context in this order:
 2. `AGENTS.md` — this engineering contract.
 3. `llms.txt` — repository orientation and current architecture map.
 4. `.context/world-state.md` if it exists — local, human-maintained current work.
-5. The most relevant `.context/skills/<skill>/SKILL.md` for the task.
+5. The most relevant `.github/skills/<skill>/SKILL.md` for the task.
 6. The relevant source, tests, config, CI, and documentation files.
 
 If `.context/world-state.md` does not exist, continue without it. Never invent its
@@ -320,7 +320,7 @@ Summarize:
 
 ## 7. Testing contract
 
-Use `.context/skills/testing/SKILL.md` for detailed test work.
+Use `.github/skills/testing/SKILL.md` for detailed test work.
 
 Universal expectations:
 
@@ -369,7 +369,7 @@ For performance, ML, data, or benchmark code:
 - Do not turn one benchmark result into a universal product/model claim.
 - Do not modify benchmark methodology merely to obtain a desired result.
 
-Use `.context/skills/benchmarking/SKILL.md` for benchmark-specific changes.
+Use `.github/skills/benchmarking/SKILL.md` for benchmark-specific changes.
 
 ---
 
@@ -502,14 +502,14 @@ Load the most relevant skill for detailed procedures:
 
 | Task | Skill |
 | --- | --- |
-| Design/scaffold a new project or major package | `.context/skills/project-architecture/SKILL.md` |
-| Write or refactor Python production code | `.context/skills/python-engineering/SKILL.md` |
-| Implement a feature end-to-end | `.context/skills/feature-implementation/SKILL.md` |
-| Create or improve tests | `.context/skills/testing/SKILL.md` |
-| Diagnose and fix a bug | `.context/skills/debugging/SKILL.md` |
-| Review a change/PR | `.context/skills/code-review/SKILL.md` |
-| README/docs/API documentation | `.context/skills/documentation/SKILL.md` |
-| Performance/ML benchmark work | `.context/skills/benchmarking/SKILL.md` |
+| Design/scaffold a new project or major package | `.github/skills/project-architecture/SKILL.md` |
+| Write or refactor Python production code | `.github/skills/python-engineering/SKILL.md` |
+| Implement a feature end-to-end | `.github/skills/feature-implementation/SKILL.md` |
+| Create or improve tests | `.github/skills/testing/SKILL.md` |
+| Diagnose and fix a bug | `.github/skills/debugging/SKILL.md` |
+| Review a change/PR | `.github/skills/code-review/SKILL.md` |
+| README/docs/API documentation | `.github/skills/documentation/SKILL.md` |
+| Performance/ML benchmark work | `.github/skills/benchmarking/SKILL.md` |
 
 Reusable task prompts live under `.context/prompts/`.
 

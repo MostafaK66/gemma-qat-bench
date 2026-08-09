@@ -9,7 +9,7 @@ runbooks, or API documentation.
 
 ## Required workflow
 
-1. Read `AGENTS.md` and `.context/skills/documentation/SKILL.md`.
+1. Read `AGENTS.md` and `.github/skills/documentation/SKILL.md`.
 2. Inspect the implementation, config, CLI help, tests, scripts, and CI that define the
    documented behavior.
 3. Treat executable code/config as the source of truth when prose is stale.
