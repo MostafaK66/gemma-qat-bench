@@ -525,3 +525,6 @@ or next step, propose/update the relevant section of `world-state.md`. Keep it c
 it is a human-readable bridge between coding sessions, not a dump of chat history.
 
 Never put secrets or sensitive credentials in world state.
+
+---
+
