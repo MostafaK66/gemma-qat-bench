@@ -568,7 +568,21 @@ repository source + tests + config + docs
 ## 17. Session state protocol
 
 `.context/world-state.md` is optional personal working memory and is gitignored.
-Use `.context/world-state-TEMPLATE.md` to create it.
+
+Before creating it, always check whether it already exists.
+
+If `.context/world-state.md` already exists:
+
+- read and preserve the existing file,
+- never replace it with `.context/world-state-TEMPLATE.md`,
+- update only the sections that materially changed,
+- preserve useful existing decisions, verification evidence, blockers, and history.
+
+If `.context/world-state.md` does not exist, create it from
+`.context/world-state-TEMPLATE.md`.
+
+Never blindly copy the template over an existing world-state file. Because the file is
+gitignored, overwriting it may destroy local session context that Git cannot restore.
 
 When meaningful work changes the current goal, design decision, blocker, environment,
 or next step, propose/update the relevant section of `world-state.md`. Keep it concise;
