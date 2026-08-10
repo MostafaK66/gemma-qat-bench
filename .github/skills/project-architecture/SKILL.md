@@ -37,8 +37,16 @@ project-root/
 ├── configs/             # when runtime config exists
 ├── scripts/             # thin helpers, not a second application layer
 ├── .run/                # shared JetBrains run configs when useful
-├── .github/workflows/   # CI
-├── .context/            # agent prompts/skills/local-state template
+├── .github/
+│   ├── copilot-instructions.md
+│   ├── instructions/
+│   └── skills/
+│       └── <skill-name>/
+│           └── SKILL.md
+├── .context/            # reusable task prompts and local world-state template/context
+│   ├── README.md
+│   ├── world-state-TEMPLATE.md
+│   └── prompts/
 ├── AGENTS.md
 ├── llms.txt
 ├── pyproject.toml
@@ -50,6 +58,11 @@ project-root/
 
 Use subpackages when a domain area has multiple cohesive modules. Do not create empty
 folders merely to match a template.
+
+Key repository conventions for agent assets:
+
+- `.github/skills/` -> reusable native agent skills
+- `.context/` -> prompts + local working context
 
 ## Module boundaries
 
