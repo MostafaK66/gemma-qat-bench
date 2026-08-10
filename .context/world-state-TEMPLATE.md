@@ -1,6 +1,12 @@
 # World State — <project name>
+> **Important:** This template is only for creating a new `.context/world-state.md`.
+> Before copying it, check whether `.context/world-state.md` already exists.
+> Never overwrite an existing world-state file with this template, because the existing
+> file may contain important local session context that is intentionally gitignored and
+> cannot be recovered from Git.
+>
 > Last updated: <YYYY-MM-DD HH:MM timezone>
-> Local working context — copy to `.context/world-state.md` and keep it untracked.
+> Local working context — use this template only when `.context/world-state.md` does not already exist.
 
 ## Active work
 
