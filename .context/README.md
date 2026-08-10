@@ -42,3 +42,44 @@ repository-root/
 └── llms.txt
 ```
 
+## Tracked vs local state
+
+Tracked reusable guidance includes:
+
+- `.context/README.md`
+- `.context/world-state-TEMPLATE.md`
+- `.context/prompts/**`
+- `.github/skills/**`
+- `.github/copilot-instructions.md`
+- `.github/instructions/**`
+- `AGENTS.md`
+- `llms.txt`
+
+Personal working state should remain untracked:
+
+- `.context/world-state.md`
+- `.context/private/`
+- `.context/session-notes/`
+- local backups or generated caches
+
+Create local world state from the template when useful:
+
+```powershell
+if (-not (Test-Path .context\world-state.md)) {
+    Copy-Item .context\world-state-TEMPLATE.md .context\world-state.md
+} else {
+    Write-Host ".context/world-state.md already exists; leaving it unchanged."
+}
+```
+
+```bash
+if [ ! -f .context/world-state.md ]; then
+    cp .context/world-state-TEMPLATE.md .context/world-state.md
+else
+    echo ".context/world-state.md already exists; leaving it unchanged."
+fi
+```
+
+Never overwrite an existing `.context/world-state.md` with the template. The existing
+file may contain important local session history that is intentionally not tracked by Git.
+
