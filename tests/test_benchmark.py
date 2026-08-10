@@ -21,7 +21,12 @@ class FakeModelManager:
         return Path(f"models/{spec.key}.gguf")
 
 
-def _config(*, n_runs: int = 2, warmup_runs: int = 1, capture_vram: bool = True) -> AppConfig:
+def _config(
+    *,
+    n_runs: int = 2,
+    warmup_runs: int = 1,
+    capture_vram: bool = True,
+) -> AppConfig:
     base = AppConfig.tutorial_default()
     return replace(
         base,
