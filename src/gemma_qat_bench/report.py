@@ -133,7 +133,10 @@ class BenchmarkReport:
                 "Wall time (s)",
                 [f"{r.mean_wall_time_s:.3f}" for r in self.results],
             ),
-            _md_row("VRAM used (MiB)", [_fmt_vram(r.vram_used_mib) for r in self.results]),
+            _md_row(
+                "VRAM used (MiB)",
+                [_fmt_vram(r.vram_used_mib) for r in self.results],
+            ),
         ]
         lines = ["# QAT vs non-QAT benchmark", "", header, divider, *rows]
         comparison = self.comparison
