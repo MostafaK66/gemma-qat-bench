@@ -15,7 +15,7 @@ from typing import Any, Protocol
 
 from ._logging import get_logger
 from .client import LlamaClient
-from .config import AppConfig, ServerConfig
+from .config import AppConfig, ModelSpec, ServerConfig
 from .metrics import AggregatedMetrics, RunMetrics
 from .models import ModelManager
 from .report import BenchmarkReport
@@ -78,7 +78,7 @@ class BenchmarkRunner:
 
     # -- internals ---------------------------------------------------------- #
 
-    def _benchmark_model(self, spec, gguf: Path) -> AggregatedMetrics:
+    def _benchmark_model(self, spec: ModelSpec, gguf: Path) -> AggregatedMetrics:
         bench = self._config.benchmark
         with self._server_factory(self._config.server, gguf) as server:
             client = self._client_factory(server.base_url, bench.request_timeout_s)
@@ -107,7 +107,11 @@ class BenchmarkRunner:
 
         return AggregatedMetrics.from_runs(spec, runs, vram_used_mib=vram)
 
-    def _one_chat(self, client: LlamaClient, spec) -> tuple[dict[str, Any], float]:
+    def _one_chat(
+        self,
+        client: LlamaClient,
+        spec: ModelSpec,
+    ) -> tuple[dict[str, Any], float]:
         bench = self._config.benchmark
         return client.chat(
             model=spec.key,

@@ -14,7 +14,7 @@ from ._logging import get_logger
 
 _LOG = get_logger("vram")
 
-CommandRunner = Callable[..., subprocess.CompletedProcess]
+CommandRunner = Callable[..., subprocess.CompletedProcess[str]]
 
 _NVIDIA_SMI_ARGS = [
     "nvidia-smi",

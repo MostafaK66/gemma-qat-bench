@@ -20,7 +20,7 @@ from .exceptions import BuildError
 
 _LOG = get_logger("build")
 
-CommandRunner = Callable[..., subprocess.CompletedProcess]
+CommandRunner = Callable[..., subprocess.CompletedProcess[str]]
 CudaDetector = Callable[[], bool]
 
 # Server binary locations across llama.cpp build layouts (newer builds put
