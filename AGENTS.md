@@ -190,12 +190,28 @@ project-root/
 ├── .github/
 │   ├── copilot-instructions.md
 │   ├── instructions/
+│   ├── skills/
+│   │   ├── project-architecture/
+│   │   │   └── SKILL.md
+│   │   ├── python-engineering/
+│   │   │   └── SKILL.md
+│   │   ├── feature-implementation/
+│   │   │   └── SKILL.md
+│   │   ├── testing/
+│   │   │   └── SKILL.md
+│   │   ├── debugging/
+│   │   │   └── SKILL.md
+│   │   ├── code-review/
+│   │   │   └── SKILL.md
+│   │   ├── documentation/
+│   │   │   └── SKILL.md
+│   │   └── benchmarking/
+│   │       └── SKILL.md
 │   └── workflows/
 ├── .context/
 │   ├── README.md
 │   ├── world-state-TEMPLATE.md
-│   ├── prompts/
-│   └── skills/
+│   └── prompts/
 ├── AGENTS.md
 ├── llms.txt
 ├── pyproject.toml
@@ -511,7 +527,41 @@ Load the most relevant skill for detailed procedures:
 | README/docs/API documentation | `.github/skills/documentation/SKILL.md` |
 | Performance/ML benchmark work | `.github/skills/benchmarking/SKILL.md` |
 
-Reusable task prompts live under `.context/prompts/`.
+### Reusable task templates
+
+Reusable task templates live under:
+
+`.context/prompts/<name>.prompt.md`
+
+They define how to frame a particular interaction, while
+`.github/skills/<skill>/SKILL.md` defines how that category of work should be performed.
+
+Native Copilot Prompt Files may be unavailable in enterprise-managed environments.
+Therefore, do not require `/PROMPT_NAME` support.
+
+When the user explicitly asks to use, apply, or follow a named prompt, load the matching
+template from `.context/prompts/`.
+
+Examples:
+
+- `use the debug-fix prompt` -> `.context/prompts/debug-fix.prompt.md`
+- `use the implement-feature prompt` -> `.context/prompts/implement-feature.prompt.md`
+- `use the refactor prompt` -> `.context/prompts/refactor.prompt.md`
+- `use the review prompt` -> `.context/prompts/review.prompt.md`
+- `use the documentation prompt` -> `.context/prompts/documentation.prompt.md`
+- `use the new-project prompt` -> `.context/prompts/new-project.prompt.md`
+
+When applicable, use both the task template and the relevant native skill:
+
+```text
+user request
+    ↓
+.context/prompts/<task>.prompt.md
+    ↓
+.github/skills/<skill>/SKILL.md
+    ↓
+repository source + tests + config + docs
+```
 
 ---
 
