@@ -48,7 +48,7 @@ def test_build_command_contains_all_flags():
     )
     manager = ServerManager(config, Path("m.gguf"))
     cmd = manager.build_command()
-    assert cmd[0] == "bin/llama-server"
+    assert Path(cmd[0]) == Path("bin/llama-server")
     assert cmd[cmd.index("-m") + 1] == "m.gguf"
     assert cmd[cmd.index("--host") + 1] == "0.0.0.0"
     assert cmd[cmd.index("--port") + 1] == "8001"

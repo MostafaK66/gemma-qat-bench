@@ -36,7 +36,7 @@ def test_clone_command():
     cfg = BuildConfig(source_dir="third_party/llama.cpp")
     cmd = LlamaCppBuilder(cfg).clone_command()
     assert cmd[:3] == ["git", "clone", "--depth"]
-    assert cmd[-1] == "third_party/llama.cpp"
+    assert Path(cmd[-1]) == Path("third_party/llama.cpp")
     assert cfg.repo_url in cmd
 
 
