@@ -241,11 +241,13 @@ def _comparison_lines(summary: ComparisonSummary, *, bullet: str) -> list[str]:
 
 
 def _fixed_width_table(header: Sequence[str], rows: Sequence[Sequence[str]]) -> str:
-    columns = list(zip(header, *rows)) if rows else [(h,) for h in header]
+    columns = list(zip(header, *rows, strict=True)) if rows else [(h,) for h in header]
     widths = [max(len(str(cell)) for cell in col) for col in columns]
 
     def fmt(cells: Sequence[str]) -> str:
-        return "  ".join(str(c).ljust(w) for c, w in zip(cells, widths))
+        return "  ".join(
+            str(c).ljust(w) for c, w in zip(cells, widths, strict=True)
+        )
 
     sep = "  ".join("-" * w for w in widths)
     lines = [fmt(header), sep]
