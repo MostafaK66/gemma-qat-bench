@@ -137,7 +137,11 @@ class ServerManager:
         return LlamaClient(base_url, timeout_s=5.0)
 
     def _wait_until_healthy(self) -> None:
-        assert self._process is not None
+        if self._process is None:
+            raise ServerStartupError(
+                "server process is not available during startup"
+            )
+
         client = self._client_factory(self.base_url)
         deadline = self._monotonic() + self._config.startup_timeout_s
         while self._monotonic() < deadline:
