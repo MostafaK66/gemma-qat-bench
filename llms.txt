@@ -24,7 +24,7 @@ model-quality benchmark.
 - `.context/README.md` — how to use local context, prompts, and skills
 - `.context/world-state-TEMPLATE.md` — template for optional gitignored working state
 - `.context/prompts/*.prompt.md` — reusable task prompts
-- `.github/skills/*/SKILL.md` — task-specific engineering procedures
+- `.github/skills/` — native reusable Copilot skills for architecture, Python engineering, features, testing, debugging, review, documentation, and benchmarking
 
 ## Repository map
 ```text
@@ -56,8 +56,9 @@ gemma-qat-bench/
 ├── .run/                     shared PyCharm run configurations
 ├── .github/
 │   ├── copilot-instructions.md
+│   ├── skills/               reusable specialized skills
 │   └── workflows/ci.yml
-├── .context/                 agent prompts, skills, local work-state template
+├── .context/                 reusable task prompts plus the local world-state template/work-state files
 ├── pyproject.toml            package/dependencies/tool configuration
 ├── Makefile                  repeatable developer commands
 ├── README.md                 user/developer documentation
