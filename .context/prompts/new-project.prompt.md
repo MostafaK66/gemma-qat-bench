@@ -28,9 +28,16 @@ tests/                  mirrored deterministic tests
 configs/                tracked example/default config
 scripts/                thin operational helpers
 .run/                   shared JetBrains run configs
-.github/workflows/      CI
-.github/copilot-instructions.md
-.context/               prompts, skills, world-state template
+.github/
+  copilot-instructions.md
+  instructions/
+  skills/
+    <skill-name>/
+      SKILL.md
+.context/               reusable task prompts and local world-state template/context
+  README.md
+  world-state-TEMPLATE.md
+  prompts/
 AGENTS.md
 llms.txt
 pyproject.toml
@@ -39,6 +46,12 @@ README.md
 LICENSE
 .gitignore
 ```
+
+Treat these paths deliberately when scaffolding:
+
+- `.github/skills/` -> canonical reusable agent skills
+- `.context/prompts/` -> reusable task templates
+- `.context/world-state.md` -> local, untracked working context
 
 Do not create empty boilerplate modules. Filenames inside the package must follow actual
 responsibilities, not copy another project's domain names.
