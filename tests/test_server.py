@@ -39,7 +39,7 @@ def _manager(
 def test_build_command_contains_all_flags():
     config = ServerConfig(
         binary_path="bin/llama-server",
-        host="0.0.0.0",
+        host="0.0.0.0",  # noqa: S104
         port=8001,
         ctx_size=8192,
         n_gpu_layers=99,
@@ -49,7 +49,7 @@ def test_build_command_contains_all_flags():
     cmd = manager.build_command()
     assert Path(cmd[0]) == Path("bin/llama-server")
     assert cmd[cmd.index("-m") + 1] == "m.gguf"
-    assert cmd[cmd.index("--host") + 1] == "0.0.0.0"
+    assert cmd[cmd.index("--host") + 1] == "0.0.0.0"  # noqa: S104
     assert cmd[cmd.index("--port") + 1] == "8001"
     assert cmd[cmd.index("--ctx-size") + 1] == "8192"
     assert cmd[cmd.index("--n-gpu-layers") + 1] == "99"

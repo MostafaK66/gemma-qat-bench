@@ -118,7 +118,9 @@ class ServerConfig:
         ``127.0.0.1``; translating here keeps health checks from failing.
         """
         host = self.host
-        if host in {"", "0.0.0.0", "::"}:
+        # Wildcard bind addresses are intentionally supported; this code only
+        # translates them to a loopback address for client-side health checks.
+        if host in {"", "0.0.0.0", "::"}:  # noqa: S104
             host = "127.0.0.1"
         return f"http://{host}:{self.port}"
 

@@ -53,7 +53,10 @@ def test_sampling_extra_body_is_copied_to_plain_dict():
 
 
 def test_server_base_url_translates_wildcard_host():
-    assert ServerConfig(host="0.0.0.0", port=8001).base_url == "http://127.0.0.1:8001"
+    assert (
+        ServerConfig(host="0.0.0.0", port=8001).base_url  # noqa: S104
+        == "http://127.0.0.1:8001"
+    )
     assert ServerConfig(host="::", port=9).base_url == "http://127.0.0.1:9"
 
 
