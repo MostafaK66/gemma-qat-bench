@@ -11,7 +11,10 @@ from gemma_qat_bench.config import SamplingConfig
 from gemma_qat_bench.exceptions import InferenceError
 
 
-def _client(session: FakeSession, base_url: str = "http://localhost:8001/") -> LlamaClient:
+def _client(
+    session: FakeSession,
+    base_url: str = "http://localhost:8001/",
+) -> LlamaClient:
     return LlamaClient(base_url, session=session, timeout_s=42.0)
 
 
