@@ -4,11 +4,10 @@ from __future__ import annotations
 
 import pytest
 
+from conftest import chat_response
 from gemma_qat_bench.config import AppConfig, ModelSpec
 from gemma_qat_bench.metrics import AggregatedMetrics, RunMetrics
 from gemma_qat_bench.report import BenchmarkReport, ComparisonSummary
-
-from conftest import chat_response
 
 
 def _agg(

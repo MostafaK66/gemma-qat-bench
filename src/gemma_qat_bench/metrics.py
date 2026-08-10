@@ -14,8 +14,9 @@ works against a strictly OpenAI-compatible backend.
 from __future__ import annotations
 
 import statistics
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 from .config import ModelSpec
 
@@ -70,7 +71,7 @@ class RunMetrics:
     @classmethod
     def from_response(
         cls, payload: Mapping[str, Any], wall_time_s: float
-    ) -> "RunMetrics":
+    ) -> RunMetrics:
         usage = payload.get("usage") or {}
         timings = payload.get("timings") or {}
         return cls(
@@ -112,7 +113,7 @@ class AggregatedMetrics:
         runs: Sequence[RunMetrics],
         *,
         vram_used_mib: int | None = None,
-    ) -> "AggregatedMetrics":
+    ) -> AggregatedMetrics:
         if not runs:
             raise ValueError("cannot aggregate an empty run sequence")
 

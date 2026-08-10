@@ -5,11 +5,10 @@ from __future__ import annotations
 import pytest
 import requests
 
+from conftest import FakeResponse, FakeSession, chat_response
 from gemma_qat_bench.client import LlamaClient
 from gemma_qat_bench.config import SamplingConfig
 from gemma_qat_bench.exceptions import InferenceError
-
-from conftest import FakeResponse, FakeSession, chat_response
 
 
 def _client(session: FakeSession, base_url: str = "http://localhost:8001/") -> LlamaClient:

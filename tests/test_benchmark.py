@@ -7,10 +7,9 @@ from pathlib import Path
 
 import pytest
 
+from conftest import FakeChatClient, FakeServer, chat_response
 from gemma_qat_bench.benchmark import BenchmarkRunner
 from gemma_qat_bench.config import AppConfig, BenchmarkConfig
-
-from conftest import FakeChatClient, FakeServer, chat_response
 
 
 class FakeModelManager:

@@ -17,9 +17,10 @@ corrections discovered against the live Hugging Face repos:
 from __future__ import annotations
 
 import tomllib
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from .exceptions import ConfigError
 
@@ -283,7 +284,7 @@ class AppConfig:
         *,
         server_binary: Path | str = DEFAULT_SERVER_BINARY,
         models_root: Path | str = "models",
-    ) -> "AppConfig":
+    ) -> AppConfig:
         """Build the two-model (non-QAT vs QAT) Gemma 4 12B configuration."""
         models_root = Path(models_root)
         models = (
@@ -309,7 +310,7 @@ class AppConfig:
         )
 
     @classmethod
-    def from_toml(cls, path: Path | str) -> "AppConfig":
+    def from_toml(cls, path: Path | str) -> AppConfig:
         """Load an :class:`AppConfig` from a TOML file (see ``configs/``)."""
         path = Path(path)
         try:
@@ -322,7 +323,7 @@ class AppConfig:
         return cls.from_mapping(raw)
 
     @classmethod
-    def from_mapping(cls, raw: Mapping[str, Any]) -> "AppConfig":
+    def from_mapping(cls, raw: Mapping[str, Any]) -> AppConfig:
         """Build an :class:`AppConfig` from a plain (already parsed) mapping."""
         model_entries = raw.get("models")
         if not model_entries:
@@ -423,7 +424,9 @@ def _build_from_mapping(entry: Mapping[str, Any]) -> BuildConfig:
         build_dir=Path(build_dir) if build_dir is not None else None,
         repo_url=entry.get("repo_url", defaults.repo_url),
         use_cuda=None if use_cuda is None else bool(use_cuda),
-        build_shared_libs=bool(entry.get("build_shared_libs", defaults.build_shared_libs)),
+        build_shared_libs=bool(
+            entry.get("build_shared_libs", defaults.build_shared_libs)
+        ),
         targets=tuple(entry.get("targets", defaults.targets)),
         jobs=int(jobs) if jobs is not None else None,
         clean_first=bool(entry.get("clean_first", defaults.clean_first)),

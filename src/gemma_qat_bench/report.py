@@ -8,9 +8,10 @@ JSON-serialisable dict lives here so the runner stays focused on measurement.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
-from typing import Any, Sequence
+from datetime import UTC, datetime
+from typing import Any
 
 from .config import AppConfig
 from .metrics import AggregatedMetrics
@@ -35,7 +36,7 @@ class ComparisonSummary:
     @classmethod
     def from_pair(
         cls, baseline: AggregatedMetrics, qat: AggregatedMetrics
-    ) -> "ComparisonSummary":
+    ) -> ComparisonSummary:
         speedup = _pct_change(baseline.mean_gen_per_s, qat.mean_gen_per_s)
         vram_saved, vram_pct = _vram_delta(
             baseline.vram_used_mib, qat.vram_used_mib
@@ -73,13 +74,13 @@ class BenchmarkReport:
         *,
         quantization: str = "UD-Q4_K_XL",
         created_at: str | None = None,
-    ) -> "BenchmarkReport":
+    ) -> BenchmarkReport:
         return cls(
             results=tuple(results),
             prompt=config.benchmark.prompt,
             max_tokens=config.sampling.max_tokens,
             quantization=quantization,
-            created_at=created_at or datetime.now(timezone.utc).isoformat(),
+            created_at=created_at or datetime.now(UTC).isoformat(),
         )
 
     @property

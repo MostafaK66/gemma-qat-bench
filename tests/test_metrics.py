@@ -4,10 +4,9 @@ from __future__ import annotations
 
 import pytest
 
+from conftest import chat_response
 from gemma_qat_bench.config import ModelSpec
 from gemma_qat_bench.metrics import AggregatedMetrics, RunMetrics
-
-from conftest import chat_response
 
 
 def _spec(is_qat: bool = False) -> ModelSpec:

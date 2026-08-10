@@ -16,7 +16,6 @@ from gemma_qat_bench.config import (
 )
 from gemma_qat_bench.exceptions import ConfigError, ModelDownloadError
 
-
 # -- SamplingConfig --------------------------------------------------------- #
 
 

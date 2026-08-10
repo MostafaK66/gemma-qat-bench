@@ -7,8 +7,8 @@ injected fake downloader -- requires nothing extra.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 from ._logging import get_logger
 from .config import ModelSpec

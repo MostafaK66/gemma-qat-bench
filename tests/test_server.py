@@ -6,11 +6,10 @@ from pathlib import Path
 
 import pytest
 
+from conftest import FakeHealthClient, FakeProcess, SequenceClock
 from gemma_qat_bench.config import ServerConfig
 from gemma_qat_bench.exceptions import ServerStartupError
 from gemma_qat_bench.server import ServerManager
-
-from conftest import FakeHealthClient, FakeProcess, SequenceClock
 
 
 def _manager(

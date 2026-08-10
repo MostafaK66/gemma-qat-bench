@@ -5,12 +5,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from conftest import chat_response
 from gemma_qat_bench import cli
 from gemma_qat_bench.config import AppConfig, ModelSpec
 from gemma_qat_bench.metrics import AggregatedMetrics, RunMetrics
 from gemma_qat_bench.report import BenchmarkReport
-
-from conftest import chat_response
 
 
 def _parse(argv):

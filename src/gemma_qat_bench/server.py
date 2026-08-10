@@ -10,9 +10,10 @@ from __future__ import annotations
 
 import subprocess
 import time
+from collections.abc import Callable
 from pathlib import Path
 from types import TracebackType
-from typing import Callable, Protocol
+from typing import Protocol
 
 from ._logging import get_logger
 from .client import LlamaClient
@@ -118,7 +119,7 @@ class ServerManager:
 
     # -- context manager ---------------------------------------------------- #
 
-    def __enter__(self) -> "ServerManager":
+    def __enter__(self) -> ServerManager:
         self.start()
         return self
 

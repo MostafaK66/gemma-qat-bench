@@ -9,8 +9,9 @@ offline in the test suite.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Protocol
+from typing import Any, Protocol
 
 from ._logging import get_logger
 from .client import LlamaClient
@@ -30,7 +31,7 @@ class ManagedServer(Protocol):
     @property
     def base_url(self) -> str: ...
 
-    def __enter__(self) -> "ManagedServer": ...
+    def __enter__(self) -> ManagedServer: ...
 
     def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> Any: ...
 

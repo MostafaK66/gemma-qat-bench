@@ -7,8 +7,9 @@ subprocess. Collaborators are replaced with the fakes defined here.
 from __future__ import annotations
 
 import sys
+from collections.abc import Callable, Iterable
 from pathlib import Path
-from typing import Any, Callable, Iterable
+from typing import Any
 
 import pytest
 
@@ -218,7 +219,7 @@ class FakeServer:
     def base_url(self) -> str:
         return self._base_url
 
-    def __enter__(self) -> "FakeServer":
+    def __enter__(self) -> FakeServer:
         self.entered = True
         return self
 

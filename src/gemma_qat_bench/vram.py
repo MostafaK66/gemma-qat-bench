@@ -8,7 +8,7 @@ without a VRAM column.
 from __future__ import annotations
 
 import subprocess
-from typing import Callable
+from collections.abc import Callable
 
 from ._logging import get_logger
 
