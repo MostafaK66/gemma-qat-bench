@@ -33,3 +33,29 @@ Useful task routing:
 - documentation → `.github/skills/documentation/SKILL.md`
 - benchmarking → `.github/skills/benchmarking/SKILL.md`
 
+
+## Reusable task templates
+
+Native Copilot Prompt Files may be unavailable in some enterprise-managed environments.
+
+Reusable task templates therefore live under `.context/prompts/`.
+
+When the user explicitly asks to use, apply, or follow a named task template, load the
+matching `.context/prompts/<name>.prompt.md` file and use it to structure the task.
+
+Examples:
+
+- `use the debug-fix prompt` → `.context/prompts/debug-fix.prompt.md`
+- `use the implement-feature prompt` → `.context/prompts/implement-feature.prompt.md`
+- `use the refactor prompt` → `.context/prompts/refactor.prompt.md`
+- `use the review prompt` → `.context/prompts/review.prompt.md`
+- `use the documentation prompt` → `.context/prompts/documentation.prompt.md`
+- `use the new-project prompt` → `.context/prompts/new-project.prompt.md`
+
+A task template defines what should be accomplished for the current interaction.
+The relevant `.github/skills/<skill>/SKILL.md` defines how that category of work should
+be performed well. Use both when applicable.
+
+Do not require native `/PROMPT_NAME` support for these templates to be useful.
+
+
