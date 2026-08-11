@@ -26,7 +26,8 @@ repository-root/
 │       ├── code-review/SKILL.md
 │       ├── documentation/SKILL.md
 │       ├── agent-framework-maintenance/SKILL.md
-│       └── benchmarking/SKILL.md
+│       ├── benchmarking/SKILL.md
+│       └── version-control/SKILL.md
 │
 ├── .context/
 │   ├── README.md
@@ -38,7 +39,9 @@ repository-root/
 │       ├── debug-fix.prompt.md
 │       ├── review.prompt.md
 │       ├── documentation.prompt.md
-│       └── extend-agent-framework.prompt.md
+│       ├── extend-agent-framework.prompt.md
+│       ├── prepare-commit.prompt.md
+│       └── integrate-branch.prompt.md
 │
 ├── AGENTS.md
 └── llms.txt

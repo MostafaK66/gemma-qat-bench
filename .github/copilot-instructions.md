@@ -42,6 +42,7 @@ the user's explicit request.
 - documentation → `.github/skills/documentation/SKILL.md`
 - agent-framework maintenance → `.github/skills/agent-framework-maintenance/SKILL.md`
 - benchmarking → `.github/skills/benchmarking/SKILL.md`
+- version control / Git workflows → `.github/skills/version-control/SKILL.md`
 
 If a routed skill or prompt file does not exist, fall back to the relevant guidance
 in `AGENTS.md` and proceed. Never fabricate the contents of a missing file.
@@ -64,6 +65,8 @@ Examples:
 - `use the review prompt` → `.context/prompts/review.prompt.md`
 - `use the documentation prompt` → `.context/prompts/documentation.prompt.md`
 - `use the extend-agent-framework prompt` → `.context/prompts/extend-agent-framework.prompt.md`
+- `use the prepare-commit prompt` → `.context/prompts/prepare-commit.prompt.md`
+- `use the integrate-branch prompt` → `.context/prompts/integrate-branch.prompt.md`
 - `use the new-project prompt` → `.context/prompts/new-project.prompt.md`
 
 
