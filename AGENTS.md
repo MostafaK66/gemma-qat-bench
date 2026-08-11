@@ -1,9 +1,13 @@
 # AGENTS.md — Engineering Contract for AI Coding Agents
 
-This file defines the repository-wide engineering contract for AI coding agents.
-It is intentionally stricter than a normal style guide: agents should use it as a
-quality gate when designing, implementing, debugging, reviewing, documenting, or
-refactoring code.
+**Last updated:** 2026-08-11 · **Applies to:** `gemma-qat-bench` · **Python:** see `pyproject.toml`
+
+> **Note:** Domain module names and filenames in §4 and throughout are illustrative.
+> Preserve the separation of concerns, not the exact filenames.
+
+This file defines the repository-wide engineering contract for AI coding agents. It is
+intentionally stricter than a normal style guide: agents should use it as a quality gate
+when designing, implementing, debugging, reviewing, documenting, or refactoring code.
 
 The current repository is `gemma-qat-bench`, but the architectural rules below are
 written so the same framework can be reused in future Python projects whose domain
@@ -28,6 +32,21 @@ contents.
 When instructions conflict, prefer the more specific instruction that is applicable
 to the file/task, unless it would violate correctness, security, or an explicit user
 request.
+
+### 1.1 Missing referenced companion files
+
+The companion files referenced by this contract may not exist in every repository that
+reuses this framework.
+
+If a referenced companion file is absent:
+
+- continue using the available instructions and repository evidence,
+- rely on this document where applicable,
+- never fabricate the missing file's contents,
+- do not block a task solely because an optional companion is unavailable.
+
+This applies to companion files such as skills, prompts, `llms.txt`,
+`.github/copilot-instructions.md`, and `.context/*`.
 
 ---
 
@@ -244,8 +263,8 @@ For Python code:
 - Avoid premature abstraction. Extract an abstraction after a real boundary or repeated
   concept is visible.
 - Avoid magic constants; use named constants or configuration.
-- Avoid broad `except Exception` unless it is intentionally normalizing a boundary error;
-  preserve the original exception with `raise ... from exc`.
+- Avoid broad `except Exception` unless it is intentionally normalizing a boundary
+  error; preserve the original exception with `raise ... from exc`.
 - Use domain-specific exception types for expected application failures.
 - Never silently swallow failures.
 - Use package logging for operational information; reserve `print` for intended CLI
@@ -280,7 +299,7 @@ Inspect:
 
 Search for existing patterns before creating a new pattern.
 
-### Step 2 — State the design internally before implementation
+### Step 2 — Determine the design before implementation
 
 Determine:
 
@@ -297,7 +316,8 @@ requirements.
 ### Step 3 — Make the smallest coherent change
 
 Prefer a complete vertical slice over scattered partial edits. Do not mix unrelated
-cleanup into a feature unless the cleanup is required for correctness or maintainability.
+cleanup into a feature unless the cleanup is required for correctness or
+maintainability.
 
 ### Step 4 — Add or update tests with the implementation
 
@@ -306,16 +326,20 @@ impossible; if so, explain why.
 
 ### Step 5 — Run quality gates
 
-At minimum, run the repository equivalents of:
+Run all of:
 
 ```bash
-pytest
-ruff check src tests
-mypy
+python -m pytest
+python -m ruff check src tests
+python -m mypy
 ```
 
 Use `pyproject.toml`, CI, and the Makefile as the source of truth for exact commands.
-Do not claim tests passed unless they were actually run successfully.
+
+Do not claim a gate passed unless it was actually run successfully.
+
+If you cannot execute the gates in the current environment, say so explicitly and list
+the commands the human must run rather than assuming success.
 
 ### Step 6 — Update developer-facing artifacts
 
@@ -470,8 +494,8 @@ When reviewing code, prioritize findings in this order:
 9. maintainability/readability,
 10. style.
 
-Report concrete findings with file/line context and impact. Do not manufacture issues to
-fill a review.
+Report concrete findings with file/line context and impact. Do not manufacture issues
+to fill a review.
 
 ---
 
@@ -527,11 +551,16 @@ Load the most relevant skill for detailed procedures:
 | README/docs/API documentation | `.github/skills/documentation/SKILL.md` |
 | Performance/ML benchmark work | `.github/skills/benchmarking/SKILL.md` |
 
+If a routed skill file does not exist, fall back to the relevant section of this
+document (§5–§13) and proceed; do not fabricate skill contents.
+
 ### Reusable task templates
 
 Reusable task templates live under:
 
-`.context/prompts/<name>.prompt.md`
+```text
+.context/prompts/<name>.prompt.md
+```
 
 They define how to frame a particular interaction, while
 `.github/skills/<skill>/SKILL.md` defines how that category of work should be performed.
@@ -544,12 +573,12 @@ template from `.context/prompts/`.
 
 Examples:
 
-- `use the debug-fix prompt` -> `.context/prompts/debug-fix.prompt.md`
-- `use the implement-feature prompt` -> `.context/prompts/implement-feature.prompt.md`
-- `use the refactor prompt` -> `.context/prompts/refactor.prompt.md`
-- `use the review prompt` -> `.context/prompts/review.prompt.md`
-- `use the documentation prompt` -> `.context/prompts/documentation.prompt.md`
-- `use the new-project prompt` -> `.context/prompts/new-project.prompt.md`
+- `use the debug-fix prompt` → `.context/prompts/debug-fix.prompt.md`
+- `use the implement-feature prompt` → `.context/prompts/implement-feature.prompt.md`
+- `use the refactor prompt` → `.context/prompts/refactor.prompt.md`
+- `use the review prompt` → `.context/prompts/review.prompt.md`
+- `use the documentation prompt` → `.context/prompts/documentation.prompt.md`
+- `use the new-project prompt` → `.context/prompts/new-project.prompt.md`
 
 When applicable, use both the task template and the relevant native skill:
 
@@ -585,10 +614,10 @@ Never blindly copy the template over an existing world-state file. Because the f
 gitignored, overwriting it may destroy local session context that Git cannot restore.
 
 When meaningful work changes the current goal, design decision, blocker, environment,
-or next step, propose/update the relevant section of `world-state.md`. Keep it concise;
-it is a human-readable bridge between coding sessions, not a dump of chat history.
+or next step, propose/update the relevant section of `world-state.md`.
+
+Keep it concise; it is a human-readable bridge between coding sessions, not a dump of
+chat history.
 
 Never put secrets or sensitive credentials in world state.
-
----
 
