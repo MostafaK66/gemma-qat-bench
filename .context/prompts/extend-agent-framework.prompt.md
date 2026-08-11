@@ -33,7 +33,14 @@ Implement: `<framework change request>`
 6. Implement only the requested framework asset changes and required synchronization.
 7. Verify references after changes by scanning for stale paths, missing routing updates,
    obsolete entries, and contradictory guidance.
-8. Do not stage or commit unless explicitly requested.
+8. Unless the user specifically requests Git index/history changes:
+   - read-only Git inspection for verification is allowed (for example: `git status`,
+     `git diff`, `git grep`)
+   - do not run `git add`
+   - do not stage or unstage files
+   - do not run `git commit` and do not amend commits
+   - do not rewrite Git history
+   - leave newly created files unstaged
 
 ## Acceptance criteria
 

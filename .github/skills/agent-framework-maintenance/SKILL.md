@@ -64,6 +64,15 @@ Never fabricate a missing referenced file unless creating it is part of the requ
 - Never overwrite `.context/world-state.md` from `.context/world-state-TEMPLATE.md`.
 - Never stage or commit changes unless explicitly requested.
 
+Unless the user specifically requests Git index/history changes:
+
+- read-only Git inspection for verification is allowed (for example: `git status`, `git diff`, `git grep`)
+- do not run `git add`
+- do not stage or unstage files
+- do not run `git commit` and do not amend commits
+- do not rewrite Git history
+- leave newly created files unstaged
+
 ## Post-change verification
 
 After edits, scan for framework consistency issues:
