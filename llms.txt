@@ -92,6 +92,8 @@ gemma-qat-bench/
 │   │   │   └── SKILL.md
 │   │   ├── documentation/
 │   │   │   └── SKILL.md
+│   │   ├── agent-framework-maintenance/
+│   │   │   └── SKILL.md
 │   │   └── benchmarking/
 │   │       └── SKILL.md
 │   └── workflows/
@@ -105,7 +107,8 @@ gemma-qat-bench/
 │       ├── refactor.prompt.md
 │       ├── debug-fix.prompt.md
 │       ├── review.prompt.md
-│       └── documentation.prompt.md
+│       ├── documentation.prompt.md
+│       └── extend-agent-framework.prompt.md
 ├── pyproject.toml            package/dependencies/tool configuration
 ├── Makefile                  repeatable developer commands
 ├── README.md                 user/developer documentation

@@ -40,6 +40,7 @@ the user's explicit request.
 - debugging → `.github/skills/debugging/SKILL.md`
 - review → `.github/skills/code-review/SKILL.md`
 - documentation → `.github/skills/documentation/SKILL.md`
+- agent-framework maintenance → `.github/skills/agent-framework-maintenance/SKILL.md`
 - benchmarking → `.github/skills/benchmarking/SKILL.md`
 
 If a routed skill or prompt file does not exist, fall back to the relevant guidance
@@ -53,5 +54,16 @@ Reusable task templates therefore live under:
 
 ```text
 .context/prompts/
+```
+
+Examples:
+
+- `use the debug-fix prompt` → `.context/prompts/debug-fix.prompt.md`
+- `use the implement-feature prompt` → `.context/prompts/implement-feature.prompt.md`
+- `use the refactor prompt` → `.context/prompts/refactor.prompt.md`
+- `use the review prompt` → `.context/prompts/review.prompt.md`
+- `use the documentation prompt` → `.context/prompts/documentation.prompt.md`
+- `use the extend-agent-framework prompt` → `.context/prompts/extend-agent-framework.prompt.md`
+- `use the new-project prompt` → `.context/prompts/new-project.prompt.md`
 
 

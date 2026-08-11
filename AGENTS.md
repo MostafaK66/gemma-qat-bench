@@ -224,6 +224,8 @@ project-root/
 │   │   │   └── SKILL.md
 │   │   ├── documentation/
 │   │   │   └── SKILL.md
+│   │   ├── agent-framework-maintenance/
+│   │   │   └── SKILL.md
 │   │   └── benchmarking/
 │   │       └── SKILL.md
 │   └── workflows/
@@ -549,6 +551,7 @@ Load the most relevant skill for detailed procedures:
 | Diagnose and fix a bug | `.github/skills/debugging/SKILL.md` |
 | Review a change/PR | `.github/skills/code-review/SKILL.md` |
 | README/docs/API documentation | `.github/skills/documentation/SKILL.md` |
+| Maintain or extend agent-framework assets | `.github/skills/agent-framework-maintenance/SKILL.md` |
 | Performance/ML benchmark work | `.github/skills/benchmarking/SKILL.md` |
 
 If a routed skill file does not exist, fall back to the relevant section of this
@@ -578,6 +581,7 @@ Examples:
 - `use the refactor prompt` → `.context/prompts/refactor.prompt.md`
 - `use the review prompt` → `.context/prompts/review.prompt.md`
 - `use the documentation prompt` → `.context/prompts/documentation.prompt.md`
+- `use the extend-agent-framework prompt` → `.context/prompts/extend-agent-framework.prompt.md`
 - `use the new-project prompt` → `.context/prompts/new-project.prompt.md`
 
 When applicable, use both the task template and the relevant native skill:
