@@ -2,10 +2,12 @@
 # Fast orientation map for AI coding agents and developers.
 
 ## Project
+
 Gemma QAT Bench is a Python package and CLI for reproducible performance comparison
 of QAT and non-QAT Gemma GGUF models using llama.cpp / llama-server.
 
 Primary concerns:
+
 - build llama.cpp with CPU or CUDA support
 - download/resolve GGUF model files from Hugging Face
 - start and stop llama-server safely
@@ -18,15 +20,30 @@ Primary concerns:
 The project measures runtime performance and memory usage; it is not an accuracy or
 model-quality benchmark.
 
+
 ## Agent framework
-- `AGENTS.md` — detailed engineering contract and routing table
+
+- `AGENTS.md` — repository-wide engineering contract and task/skill routing
 - `.github/copilot-instructions.md` — concise always-on GitHub Copilot instructions
-- `.context/README.md` — how to use local context, prompts, and skills
+- `.github/instructions/*.instructions.md` — automatic path-specific instructions for
+  source code, tests, documentation, and configuration
+- `.github/skills/` — native reusable Copilot skills for specialized engineering tasks
+- `.context/prompts/*.prompt.md` — reusable task templates
 - `.context/world-state-TEMPLATE.md` — template for optional gitignored working state
-- `.context/prompts/*.prompt.md` — reusable task prompts
-- `.github/skills/` — native reusable Copilot skills for architecture, Python engineering, features, testing, debugging, review, documentation, and benchmarking
+- `.context/README.md` — how to use local world state and reusable task prompts
+
+The roles are intentionally different:
+
+- `AGENTS.md` defines how engineering work should be performed.
+- `llms.txt` provides a fast map of the repository.
+- `.github/instructions/` applies focused rules based on the files being worked on.
+- `.github/skills/` provides specialized task expertise.
+- `.context/prompts/` provides reusable task framing.
+- `.context/world-state.md`, when present, stores local current-session/project state.
+
 
 ## Repository map
+
 ```text
 gemma-qat-bench/
 ├── AGENTS.md
@@ -56,75 +73,42 @@ gemma-qat-bench/
 ├── .run/                     shared PyCharm run configurations
 ├── .github/
 │   ├── copilot-instructions.md
-│   ├── skills/               reusable specialized skills
-│   └── workflows/ci.yml
-├── .context/                 reusable task prompts plus the local world-state template/work-state files
+│   ├── instructions/
+│   │   ├── python.instructions.md
+│   │   ├── tests.instructions.md
+│   │   └── documentation.instructions.md
+│   ├── skills/
+│   │   ├── project-architecture/
+│   │   │   └── SKILL.md
+│   │   ├── python-engineering/
+│   │   │   └── SKILL.md
+│   │   ├── feature-implementation/
+│   │   │   └── SKILL.md
+│   │   ├── testing/
+│   │   │   └── SKILL.md
+│   │   ├── debugging/
+│   │   │   └── SKILL.md
+│   │   ├── code-review/
+│   │   │   └── SKILL.md
+│   │   ├── documentation/
+│   │   │   └── SKILL.md
+│   │   └── benchmarking/
+│   │       └── SKILL.md
+│   └── workflows/
+│       └── ci.yml
+├── .context/
+│   ├── README.md
+│   ├── world-state-TEMPLATE.md
+│   └── prompts/
+│       ├── new-project.prompt.md
+│       ├── implement-feature.prompt.md
+│       ├── refactor.prompt.md
+│       ├── debug-fix.prompt.md
+│       ├── review.prompt.md
+│       └── documentation.prompt.md
 ├── pyproject.toml            package/dependencies/tool configuration
 ├── Makefile                  repeatable developer commands
 ├── README.md                 user/developer documentation
 ├── LICENSE
 └── .gitignore
-```
 
-## Current architecture boundaries
-- `config.py` owns input/config validation; other modules should consume validated config.
-- `build.py`, `models.py`, `server.py`, `client.py`, and `vram.py` are infrastructure boundaries.
-- `metrics.py` owns measurement parsing/calculation.
-- `benchmark.py` coordinates components but should not absorb their implementation logic.
-- `report.py` owns comparison and rendering logic.
-- `cli.py` is an adapter: parse → resolve config → dispatch → render errors/results.
-
-## Quality commands
-From an activated development environment:
-```bash
-pytest
-ruff check src tests
-mypy
-```
-
-Useful Makefile shortcuts:
-```bash
-make test
-make lint
-make typecheck
-make bench
-```
-
-## Runtime commands
-```bash
-gemma-qat-bench build --cuda
-gemma-qat-bench --config configs/tutorial.toml download
-gemma-qat-bench --config configs/tutorial.toml bench
-gemma-qat-bench --config configs/tutorial.toml all --cuda
-```
-
-## Key engineering patterns
-- `src/` package layout.
-- Thin entry points.
-- Frozen/validated configuration objects.
-- `pathlib.Path` for filesystem paths.
-- Dependency injection around subprocess, HTTP, download, server, and VRAM boundaries.
-- Domain-specific exceptions.
-- Offline deterministic unit tests by default.
-- Warmup + repeated measured benchmark runs.
-- Generation throughput prefers llama.cpp timing data and falls back to wall clock.
-- Gemma response extraction checks `content`, then `reasoning_content`.
-
-## Runtime artifacts — do not commit
-- `.venv/`
-- `models/`
-- `results/`
-- `third_party/`
-- caches/coverage output
-- `.idea/` and other user-specific IDE state
-- `.context/world-state.md`
-
-## When extending the project
-Do not mechanically add a file for every concept. First identify the responsibility and
-place it in the nearest coherent module. Create a new module/subpackage only when it
-creates a real architectural boundary or keeps an existing module focused.
-
-When scaffolding a different future project, preserve the principles rather than these
-exact domain filenames: `src/` package, mirrored tests, configuration, scripts where
-useful, shared IDE run configs, CI, agent instructions, documentation, and clean
-separation between domain logic and side effects.
