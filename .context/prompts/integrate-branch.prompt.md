@@ -35,7 +35,21 @@ Optional explicit operations (only when requested):
 12. Verify integration result.
 13. Push only if explicitly authorized.
 14. Delete local source branch only if explicitly authorized and after verifying no unique work would be lost.
-15. Delete remote source branch only if explicitly authorized and after verifying no unique work would be lost.
+    - attempt ordinary safe deletion first: `git branch -d <source-branch>`
+    - if safe deletion succeeds, continue
+    - if safe deletion fails, inspect the exact Git reason
+    - do not automatically use `git branch -D <source-branch>`
+    - independently verify all of the following before any upstream adjustment:
+      - source is fully contained in target
+      - source has zero unique commits relative to target
+      - remote target contains the integrated source tip when remote integration was part of the workflow
+    - inspect the source branch's configured upstream
+    - only when evidence shows refusal is caused by the source branch tracking an upstream that is behind, and cleanup was explicitly authorized, unset only the source branch upstream: `git branch --unset-upstream <source-branch>`
+    - retry ordinary safe deletion: `git branch -d <source-branch>`
+    - if safe deletion still fails, stop and report the exact reason
+    - never unset upstream to bypass genuine unmerged/unique source work
+    - do not change the target branch upstream as part of source cleanup
+15. Delete remote source branch only if explicitly authorized and after verifying no unique work would be lost and remote-target integration is confirmed.
 16. Verify final repository state and report results.
 
 ## Conflict decision boundary
@@ -52,6 +66,8 @@ Do not assume:
 - remote branch deletion is authorized
 
 These must be explicitly requested.
+
+If cleanup evidence is ambiguous, stop rather than forcing deletion.
 
 ## Expected output
 

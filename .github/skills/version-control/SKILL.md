@@ -180,7 +180,29 @@ Before deleting a working branch after integration:
 
 For local cleanup, prefer safe deletion semantics where possible.
 
+If `git branch -d <source>` fails, do not automatically escalate to `git branch -D <source>`.
+
+Before any alternative cleanup step, verify independently:
+
+1. target contains the entire source branch history intended for integration
+2. source has zero unique commits relative to target
+3. remote target contains the integrated source tip when remote integration was part of the workflow
+
+Then inspect the source branch's configured upstream.
+
+When repository evidence confirms cleanup is safe, cleanup was explicitly authorized, and refusal is caused by a stale source upstream that does not contain the source branch's latest commits, it is acceptable to remove only that source-branch upstream association:
+
+- `git branch --unset-upstream <source>`
+
+Afterward, retry ordinary safe deletion:
+
+- `git branch -d <source>`
+
+If safe deletion still fails after the verified upstream adjustment, stop and report the exact Git reason. Do not force-delete automatically.
+
 Never infer remote branch deletion from a merge-only request.
+
+Remote source-branch deletion is separately authorized and should occur only after integration and remote-target verification are complete.
 
 ## 9) Rebase/history rewriting
 
