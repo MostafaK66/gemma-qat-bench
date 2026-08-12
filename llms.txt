@@ -112,7 +112,8 @@ gemma-qat-bench/
 │       ├── documentation.prompt.md
 │       ├── extend-agent-framework.prompt.md
 │       ├── prepare-commit.prompt.md
-│       └── integrate-branch.prompt.md
+│       ├── integrate-branch.prompt.md
+│       └── start-work-branch.prompt.md
 ├── pyproject.toml            package/dependencies/tool configuration
 ├── Makefile                  repeatable developer commands
 ├── README.md                 user/developer documentation

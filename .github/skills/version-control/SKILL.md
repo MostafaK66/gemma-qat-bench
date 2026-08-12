@@ -99,6 +99,107 @@ Do not assume target branch is `master` or `main`; determine it from user reques
 
 Do not switch branches if doing so risks overwriting or losing local work.
 
+### 4.1) Safe branch-start workflow
+
+Before creating a new working branch, always:
+
+1. inspect current branch
+2. inspect `git status`
+3. classify tracked, staged, untracked, and unrelated work
+4. determine requested base branch from user request and repository evidence
+5. verify base branch exists locally
+6. inspect remotes when remote state is relevant
+7. verify switching to/inspecting base cannot overwrite unrelated local work
+8. verify requested new branch does not already exist locally
+9. inspect whether same-named remote branch exists when relevant
+10. create branch only when base and new branch name are unambiguous
+
+When the user provides an explicit valid branch name, use it exactly.
+
+When the user provides only a work description:
+
+- inspect repository naming conventions when evidence exists
+- propose a concise branch name
+- if multiple names are plausible, stop and ask the user before creating the branch
+
+Do not overwrite or force-recreate existing local/remote branches.
+
+If branch exists and request did not explicitly authorize resuming/reusing it, stop and report.
+
+### 4.2) Action boundaries for branch start
+
+Treat these as separate actions with separate authorization:
+
+- inspecting a base branch
+- synchronizing a base branch
+- creating a new local branch
+- publishing/pushing a new branch
+
+Request example `Create feature-x from master` authorizes:
+
+- read-only Git inspection
+- switching to validated base when safe
+- creating requested new local branch
+- switching to the new local branch
+
+It does **not** authorize:
+
+- updating the base branch
+- `pull`, `merge`, `rebase`, `reset`, `restore`
+- `stash` or `clean`
+- `commit` or amend
+- `push` or upstream creation
+- branch deletion
+- history rewriting
+
+### 4.3) Base synchronization safety
+
+If local base is behind its remote counterpart, do not silently update it.
+
+Report local-vs-remote base state and proceed without synchronization unless user explicitly requested latest remote base.
+
+When synchronization is explicitly requested:
+
+- use only a safe strategy supported by repository state and explicit intent
+- prefer fast-forward-only synchronization when applicable
+- never silently rebase or rewrite base history
+- if local and remote base diverged, stop and report rather than choosing reconciliation automatically
+
+### 4.4) Working-tree protection during branch start
+
+Before switching/creating branches, preserve:
+
+- tracked local changes
+- staged changes
+- unrelated untracked files
+
+Do not automatically:
+
+- stash
+- reset/restore
+- clean
+- discard local work
+
+An unrelated untracked path may remain if repository evidence shows it will not be overwritten by branch operations.
+
+### 4.5) Branch creation and verification
+
+Create the new local branch only after checks pass, for example:
+
+- `git switch -c <new-branch> <base-branch>`
+
+Do not use force options.
+
+After creation, verify:
+
+- current branch is requested new branch
+- new branch tip is based on intended base commit
+- no unrelated tracked/staged work was lost or unexpectedly changed
+- unrelated untracked files remain intact
+- repository status is understood
+
+Do not push automatically; push/publication is separately authorized.
+
 ## 5) Integration readiness workflow
 
 Before integrating source branch into target branch:

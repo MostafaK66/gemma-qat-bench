@@ -587,6 +587,7 @@ Examples:
 - `use the extend-agent-framework prompt` → `.context/prompts/extend-agent-framework.prompt.md`
 - `use the prepare-commit prompt` → `.context/prompts/prepare-commit.prompt.md`
 - `use the integrate-branch prompt` → `.context/prompts/integrate-branch.prompt.md`
+- `use the start-work-branch prompt` → `.context/prompts/start-work-branch.prompt.md`
 - `use the new-project prompt` → `.context/prompts/new-project.prompt.md`
 
 When applicable, use both the task template and the relevant native skill:

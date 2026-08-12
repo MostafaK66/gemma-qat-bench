@@ -41,7 +41,8 @@ repository-root/
 │       ├── documentation.prompt.md
 │       ├── extend-agent-framework.prompt.md
 │       ├── prepare-commit.prompt.md
-│       └── integrate-branch.prompt.md
+│       ├── integrate-branch.prompt.md
+│       └── start-work-branch.prompt.md
 │
 ├── AGENTS.md
 └── llms.txt
