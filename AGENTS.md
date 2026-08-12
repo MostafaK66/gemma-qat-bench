@@ -560,6 +560,31 @@ Load the most relevant skill for detailed procedures:
 If a routed skill file does not exist, fall back to the relevant section of this
 document (§5–§13) and proceed; do not fabricate skill contents.
 
+### 16.1 Repository-specific branch naming (`gemma-qat-bench`)
+
+This is a repository-specific default for agent-generated branch names in
+`gemma-qat-bench` (not a universal Git rule).
+
+- If the user provides an explicit valid branch name, use it exactly.
+- If the agent must propose/generate a branch name, prefer simple lowercase
+  hyphen-separated names.
+- Do not default to slash-separated prefixes such as `feature/...`, `fix/...`,
+  `refactor/...`, or `docs/...`.
+
+Preferred agent-generated examples:
+
+- `feature-agent-framework-ci`
+- `fix-server-startup`
+- `refactor-benchmark-runner`
+- `docs-update-readme`
+
+Do not prefer:
+
+- `feature/agent-framework-ci`
+- `fix/server-startup`
+- `refactor/benchmark-runner`
+- `docs/update-readme`
+
 ### Reusable task templates
 
 Reusable task templates live under:
