@@ -42,6 +42,7 @@ the user's explicit request.
 - documentation → `.github/skills/documentation/SKILL.md`
 - agent-framework maintenance → `.github/skills/agent-framework-maintenance/SKILL.md`
 - benchmarking → `.github/skills/benchmarking/SKILL.md`
+- multi-role orchestrated planning → `.github/skills/orchestration/SKILL.md`
 - version control / Git workflows → `.github/skills/version-control/SKILL.md`
 
 If a routed skill or prompt file does not exist, fall back to the relevant guidance
@@ -68,6 +69,9 @@ Examples:
 - `use the prepare-commit prompt` → `.context/prompts/prepare-commit.prompt.md`
 - `use the integrate-branch prompt` → `.context/prompts/integrate-branch.prompt.md`
 - `use the start-work-branch prompt` → `.context/prompts/start-work-branch.prompt.md`
+- `use the orchestrate prompt` → `.context/prompts/orchestrate.prompt.md`
+- `use the plan prompt` → `.context/prompts/plan.prompt.md`
+- `use the critique-plan prompt` → `.context/prompts/critique-plan.prompt.md`
 - `use the new-project prompt` → `.context/prompts/new-project.prompt.md`
 
 

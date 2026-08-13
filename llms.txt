@@ -29,6 +29,8 @@ model-quality benchmark.
   source code, tests, documentation, and configuration
 - `.github/skills/` — native reusable Copilot skills for specialized engineering tasks
 - `.context/prompts/*.prompt.md` — reusable task templates
+- `.context/AGENT-ROLES.md` — authoritative orchestration role/tool/gate contract
+- `.context/handoff-TEMPLATE.md` — tracked orchestration-state template
 - `.context/world-state-TEMPLATE.md` — template for optional gitignored working state
 - `.context/README.md` — how to use local world state and reusable task prompts
 
@@ -96,14 +98,21 @@ gemma-qat-bench/
 │   │   │   └── SKILL.md
 │   │   ├── benchmarking/
 │   │   │   └── SKILL.md
+│   │   ├── orchestration/
+│   │   │   └── SKILL.md
 │   │   └── version-control/
 │   │       └── SKILL.md
 │   └── workflows/
 │       └── ci.yml
 ├── .context/
+│   ├── AGENT-ROLES.md
 │   ├── README.md
+│   ├── handoff-TEMPLATE.md
 │   ├── world-state-TEMPLATE.md
 │   └── prompts/
+│       ├── orchestrate.prompt.md
+│       ├── plan.prompt.md
+│       ├── critique-plan.prompt.md
 │       ├── new-project.prompt.md
 │       ├── implement-feature.prompt.md
 │       ├── refactor.prompt.md

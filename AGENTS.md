@@ -228,11 +228,15 @@ project-root/
 │   │   │   └── SKILL.md
 │   │   ├── benchmarking/
 │   │   │   └── SKILL.md
+│   │   ├── orchestration/
+│   │   │   └── SKILL.md
 │   │   └── version-control/
 │   │       └── SKILL.md
 │   └── workflows/
 ├── .context/
+│   ├── AGENT-ROLES.md
 │   ├── README.md
+│   ├── handoff-TEMPLATE.md
 │   ├── world-state-TEMPLATE.md
 │   └── prompts/
 ├── AGENTS.md
@@ -555,6 +559,7 @@ Load the most relevant skill for detailed procedures:
 | README/docs/API documentation | `.github/skills/documentation/SKILL.md` |
 | Maintain or extend agent-framework assets | `.github/skills/agent-framework-maintenance/SKILL.md` |
 | Performance/ML benchmark work | `.github/skills/benchmarking/SKILL.md` |
+| Multi-role orchestrated planning workflows | `.github/skills/orchestration/SKILL.md` |
 | Prepare commits, branch integration, and Git safety workflows | `.github/skills/version-control/SKILL.md` |
 
 If a routed skill file does not exist, fall back to the relevant section of this
@@ -585,6 +590,19 @@ Do not prefer:
 - `refactor/benchmark-runner`
 - `docs/update-readme`
 
+### 16.2 Orchestration V1 boundary (`gemma-qat-bench`)
+
+Orchestration V1 is planning-only and exists to validate protocol quality before any
+implementation work.
+
+- Run workflow via `.github/skills/orchestration/SKILL.md` and the orchestration
+  prompts in `.context/prompts/`.
+- V1 performs planning plus independent plan review, then stops at `PLAN APPROVED`
+  or escalates to a human.
+- V1 does not execute product/source implementation.
+- Detailed role, gate, model, and handoff contracts live in
+  `.context/AGENT-ROLES.md`, not in this file.
+
 ### Reusable task templates
 
 Reusable task templates live under:
@@ -613,6 +631,9 @@ Examples:
 - `use the prepare-commit prompt` → `.context/prompts/prepare-commit.prompt.md`
 - `use the integrate-branch prompt` → `.context/prompts/integrate-branch.prompt.md`
 - `use the start-work-branch prompt` → `.context/prompts/start-work-branch.prompt.md`
+- `use the orchestrate prompt` → `.context/prompts/orchestrate.prompt.md`
+- `use the plan prompt` → `.context/prompts/plan.prompt.md`
+- `use the critique-plan prompt` → `.context/prompts/critique-plan.prompt.md`
 - `use the new-project prompt` → `.context/prompts/new-project.prompt.md`
 
 When applicable, use both the task template and the relevant native skill:

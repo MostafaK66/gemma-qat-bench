@@ -29,6 +29,7 @@ third_party/
 
 # Agent personal working state (shared templates/prompts/skills remain tracked)
 .context/world-state.md
+.context/handoffs/
 .context/private/
 .context/session-notes/
 .context/.onboarding-complete

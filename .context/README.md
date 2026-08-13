@@ -27,12 +27,18 @@ repository-root/
 │       ├── documentation/SKILL.md
 │       ├── agent-framework-maintenance/SKILL.md
 │       ├── benchmarking/SKILL.md
+│       ├── orchestration/SKILL.md
 │       └── version-control/SKILL.md
 │
 ├── .context/
+│   ├── AGENT-ROLES.md
 │   ├── README.md
+│   ├── handoff-TEMPLATE.md
 │   ├── world-state-TEMPLATE.md
 │   └── prompts/
+│       ├── orchestrate.prompt.md
+│       ├── plan.prompt.md
+│       ├── critique-plan.prompt.md
 │       ├── new-project.prompt.md
 │       ├── implement-feature.prompt.md
 │       ├── refactor.prompt.md
@@ -64,6 +70,7 @@ Tracked reusable guidance includes:
 Personal working state should remain untracked:
 
 - `.context/world-state.md`
+- `.context/handoffs/`
 - `.context/private/`
 - `.context/session-notes/`
 - local backups or generated caches
