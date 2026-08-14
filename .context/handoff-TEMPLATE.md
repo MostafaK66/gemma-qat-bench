@@ -2,7 +2,8 @@
 
 Task ID:
 Created:
-Execution mode: `chat-simulation` | `sdk-sub-agent`
+Requested execution mode: `chat-simulation` | `ide-custom-agent` | `sdk-sub-agent`
+Actual execution mode: `chat-simulation` | `ide-custom-agent` | `sdk-sub-agent`
 Source branch/context:
 Current state: `INTAKE` | `PLAN` | `PLAN_REVIEW` | `AWAITING_HUMAN_CLARIFICATION` | `PLAN APPROVED` | `ESCALATE TO HUMAN`
 
@@ -23,17 +24,23 @@ Orchestration depth:
 
 Record known metadata only; do not invent runtime details.
 
-| Role | Execution mode | Requested model slot | Actual model (if known) | Model family (if known) | Reasoning config (if known) | Fallback used (yes/no) | Fallback reason |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Orchestrator |  | `orchestrator_model` |  |  |  |  |  |
-| Planner |  | `planner_model` |  |  |  |  |  |
-| Plan Critic |  | `plan_critic_model` |  |  |  |  |  |
+| Role | Custom-agent profile (if used) | `configured_model` (if known) | `actual_model` (if runtime/UI known) | `model_family` (if runtime/UI known) | Reasoning config (if known) |
+| --- | --- | --- | --- | --- | --- |
+| Orchestrator |  | `orchestrator_model` |  |  |  |
+| Planner |  | `planner_model` |  |  |  |
+| Plan Critic |  | `plan_critic_model` |  |  |  |
+
+| `delegation_verified` (yes/no/unknown) | `configured_model_family_diversity` (yes/no/unknown) | `heterogeneous_execution_verified` (yes/no/unknown) | `fallback_used` (yes/no/not applicable) | `fallback_reason` |
+| --- | --- | --- | --- | --- |
+|  |  |  |  |  |
 
 For V1 chat simulation, explicit placeholders are acceptable, for example:
 
 - actual isolated model: not independently controlled
 - model family: not independently controlled / unknown
 - fallback used: not applicable
+
+For V1.5 IDE custom agents, record `configured_model` from the profile and `actual_model`/`model_family` only from runtime/UI evidence. A configured profile property alone does not verify actual delegated execution or serving-model use. Record `configured_model_family_diversity: yes` only when configured families are known and distinct; different identifiers alone are insufficient. Record `heterogeneous_execution_verified: yes` only when runtime/UI evidence proves actual delegated executions used distinct model families. The validated JetBrains mechanism is `run_subagent`, but delegation mechanism names are runtime-specific.
 
 ## Context
 

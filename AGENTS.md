@@ -208,6 +208,9 @@ project-root/
 ├── .run/                            # shared JetBrains/PyCharm run configs
 ├── .github/
 │   ├── copilot-instructions.md
+│   ├── agents/
+│   │   ├── planner.agent.md
+│   │   └── plan-critic.agent.md
 │   ├── instructions/
 │   ├── skills/
 │   │   ├── project-architecture/

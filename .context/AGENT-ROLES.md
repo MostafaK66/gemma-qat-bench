@@ -4,15 +4,24 @@ This file is the authoritative role, tool, gate, and model contract for orchestr
 
 ## Execution modes
 
-### Current V1: `chat-simulation`
+### `chat-simulation`
 
 - Role separation exists at the workflow level.
 - Planner and Plan Critic are sequential phases in the same Copilot Chat/session.
 - Isolated agent contexts are not guaranteed.
 - Independent per-role model assignment is not guaranteed.
-- Heterogeneous model-family execution must not be claimed unless runtime evidence exists.
+- This is the existing V1 fallback mode.
 
-### Future mode: `sdk-sub-agent`
+### V1.5 experimental: `ide-custom-agent`
+
+- Repository profiles live under `.github/agents/`.
+- Conceptually, Planner and Plan Critic require repository read/search capability only. The validated JetBrains profiles declare exactly `list_dir`, `read_file`, `file_search`, and `grep_search`; they have no edit, execution, Git-mutation, or delegation tools. Generic `read` and `search` aliases are not valid JetBrains profile tools.
+- A profile may contain a human-selected, runtime-available `model:` value. Concrete profile selections are executable runtime configuration and may vary by environment or organization; the contract continues to use conceptual model slots.
+- Custom-agent delegation is runtime-specific. In the validated JetBrains environment it is exposed as `run_subagent`: the main Copilot Agent/chat invokes Planner, persists its `PLAN`, then invokes Plan Critic with that artifact.
+- JetBrains custom-agent support is preview. This environment validated profile discovery, the concrete least-privilege tools, delegated Planner/Critic invocation including revision/re-review, pause/resume, and no-fallback orchestration. Actual serving-model identity remains runtime/UI evidence; this mode has no SDK-level isolation guarantees.
+- If discovery or delegation is unavailable, Orchestrator falls back to `chat-simulation`, records the reason, and records model independence as unknown/not independently controlled.
+
+### Future: `sdk-sub-agent`
 
 - Specialist roles run as isolated delegated sub-agents.
 - Roles can receive role-specific prompts, tools, skills, models, and reasoning configuration.
@@ -23,8 +32,8 @@ This file is the authoritative role, tool, gate, and model contract for orchestr
 | Role | Mandate | Product edits? | Tool strategy | Backing prompt / skills | Model strategy |
 | --- | --- | --- | --- | --- | --- |
 | Orchestrator | Intake, classify risk, initialize handoff, invoke phases, pass structured artifacts, persist orchestration state, enforce gates and budgets, escalate as needed | No | Read repository evidence; write only orchestration-state artifacts | `.context/prompts/orchestrate.prompt.md`; `.github/skills/orchestration/SKILL.md` | `orchestrator_model`; coordination-focused, can prioritize efficiency |
-| Planner | Produce smallest coherent evidence-based plan with ownership, files, tests, risks, assumptions, and out-of-scope boundaries | No | Read-only evidence inspection | `.context/prompts/plan.prompt.md`; `project-architecture`, `feature-implementation`, `python-engineering`, task-specific skills | `planner_model`; planning/reasoning-focused |
-| Plan Critic | Independently evaluate plan quality, ownership, minimality, correctness risk, test strategy, compatibility, assumptions, and scope control | No | Read-only evidence inspection | `.context/prompts/critique-plan.prompt.md`; `code-review`, `project-architecture`, `testing` | `plan_critic_model`; review/reasoning-focused |
+| Planner | Produce smallest coherent evidence-based plan with ownership, files, tests, risks, assumptions, and out-of-scope boundaries | No | Read-only repository inspection; validated JetBrains tools: `list_dir`, `read_file`, `file_search`, `grep_search` | `.context/prompts/plan.prompt.md`; `project-architecture`, `feature-implementation`, `python-engineering`, task-specific skills | `planner_model`; planning/reasoning-focused |
+| Plan Critic | Independently evaluate plan quality, ownership, minimality, correctness risk, test strategy, compatibility, assumptions, and scope control | No | Read-only repository inspection; validated JetBrains tools: `list_dir`, `read_file`, `file_search`, `grep_search` | `.context/prompts/critique-plan.prompt.md`; `code-review`, `project-architecture`, `testing` | `plan_critic_model`; review/reasoning-focused |
 | Implementer (future) | Execute approved plan and update code/tests | Yes (future only) | Scoped implementation tools (future) | future prompt/skill mapping | `implementer_model` |
 | Verifier (future) | Independently run checks and verify acceptance evidence | No product edits expected | Verification tools (future) | future prompt/skill mapping | `verifier_model` |
 | Reviewer (future) | Judge merge readiness from actual diff and evidence | No product edits expected | Read + review tools (future) | future prompt/skill mapping | `reviewer_model` |
@@ -212,7 +221,7 @@ Use conceptual slots:
 
 Model-family diversity is a strong preference when suitable models are available.
 
-Preferred future medium/high-risk relationships:
+Preferred medium/high-risk relationship when suitable models are available:
 
 - `family(planner_model) != family(plan_critic_model)`
 - later: `family(implementer_model) != family(reviewer_model)`
@@ -220,6 +229,26 @@ Preferred future medium/high-risk relationships:
 This is a preference for stronger independence, not a binary gate requirement.
 
 If diversity is unavailable, record residual orchestration risk. Do not fail an otherwise valid gate solely for that reason.
+
+For `ide-custom-agent`, concrete profile `model:` values are human-selected runtime configuration; their availability may vary by environment or organization. Keep Gate 1 and the state machine on conceptual model slots. Record `configured_model_family_diversity: yes` only when configured model families are known and distinct; different identifiers alone are insufficient. Record `actual_model` and `model_family` only from runtime/UI evidence for the delegated invocation. Record `heterogeneous_execution_verified: yes` only when runtime/UI evidence proves the actual delegated executions used distinct model families; it must not be inferred from configured diversity. In this validated JetBrains smoke test, configured family diversity is `yes`, while actual model identity and heterogeneous execution remain `unknown`.
+
+## V1.5 IDE custom-agent mapping (experimental)
+
+The normal main Copilot Agent/chat remains Orchestrator; no Orchestrator custom-agent profile exists in V1.5.
+
+```text
+Main Orchestrator
+  -> invoke `.github/agents/planner.agent.md` through the runtime-specific delegation mechanism (`run_subagent` in the validated JetBrains environment)
+  -> receive structured PLAN
+  -> persist handoff
+  -> invoke `.github/agents/plan-critic.agent.md` with PLAN
+  -> receive structured PLAN REVIEW
+  -> persist handoff and enforce Gate 1 routing
+```
+
+The Orchestrator alone owns sequencing, handoff creation/update, Gate 1, blocker routing, `AWAITING_HUMAN_CLARIFICATION`, human clarification, revision counting, and escalation. Planner remains author and Plan Critic remains judge. Neither specialist writes `.context/handoffs/**` or invokes another agent.
+
+For each specialist invocation, record these evidence fields without conflation: `delegation_verified`, `configured_model`, `actual_model`, `model_family`, `configured_model_family_diversity`, and `heterogeneous_execution_verified`. The configured profile value does not prove the actual serving model; configured diversity does not prove heterogeneous runtime execution.
 
 ## Future SDK mapping (conceptual)
 

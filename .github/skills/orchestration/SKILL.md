@@ -23,7 +23,7 @@ Core principles:
 
 ## Execution modes
 
-### Mode A: `chat-simulation` (current V1)
+### Mode A: `chat-simulation`
 
 - Role separation is enforced by workflow phase and contract.
 - Planner and Plan Critic run sequentially in one chat/session.
@@ -31,7 +31,17 @@ Core principles:
 - Independent per-role model assignment is not guaranteed.
 - Do not claim heterogeneous model execution unless runtime evidence exists.
 
-### Mode B: `sdk-sub-agent` (future)
+### Mode B: `ide-custom-agent` (V1.5 experimental)
+
+- Repository role profiles live under `.github/agents/`.
+- Planner and Plan Critic conceptually require repository read/search capability only. The validated JetBrains profiles use exactly `list_dir`, `read_file`, `file_search`, and `grep_search`; they do not edit, execute commands, mutate Git, delegate, or write handoffs. Generic `read` and `search` aliases are not valid JetBrains profile tools.
+- The normal main Copilot Agent/chat remains Orchestrator and solely owns sequencing, handoff persistence, Gate 1, blocker routing, human clarification, revision counting, and escalation.
+- Custom-agent delegation is runtime-specific. In the validated JetBrains environment it is exposed as `run_subagent`: invoke Planner, persist the returned `PLAN`, then invoke Plan Critic with that artifact.
+- A profile may contain a human-selected, runtime-available role-specific `model:` value. Concrete values are executable runtime configuration and may vary by environment or organization; do not invent or commit placeholders.
+- JetBrains support is preview. This environment validated profile discovery, concrete least-privilege tools, delegated Planner/Critic invocation including revision/re-review, pause/resume, and no-fallback orchestration. Actual serving-model identity still requires runtime/UI evidence; do not claim SDK-level context isolation or heterogeneous execution without that evidence.
+- If profile discovery or delegated invocation is unavailable, use `chat-simulation`, record fallback use and reason, and record model independence as unknown/not independently controlled. This does not fail an otherwise sound Gate 1.
+
+### Mode C: `sdk-sub-agent` (future)
 
 - Parent orchestrator delegates to isolated specialist agents.
 - Each role may receive role-specific prompt, tools, skills, model, and reasoning configuration.
@@ -219,7 +229,7 @@ Use conceptual model slots, not hard-coded model names:
 - `verifier_model`
 - `reviewer_model`
 
-Selection order for future SDK execution:
+Selection order for role-specific model configuration:
 
 1. role fitness
 2. author/critic independence preference
@@ -228,12 +238,12 @@ Selection order for future SDK execution:
 5. cost/latency
 6. explicit fallback recording
 
-Preferred medium/high-risk relationships when suitable models are available:
+Preferred medium/high-risk relationship when suitable models are available:
 
 - `family(planner_model) != family(plan_critic_model)`
 - later: `family(implementer_model) != family(reviewer_model)`
 
-If family diversity is unavailable, record reduced independence as residual risk. Do not fail a sound gate for that reason alone.
+If family diversity is unavailable, record reduced independence as residual risk. Do not fail a sound gate for that reason alone. For `ide-custom-agent`, use only human-selected runtime-available profile values. Record `configured_model_family_diversity: yes` only when configured families are known and distinct; differing identifiers alone are insufficient. Record `actual_model` and `model_family` only when exposed by runtime/UI evidence. Record `heterogeneous_execution_verified: yes` only when runtime/UI evidence proves the actual delegated executions used distinct model families; configured diversity alone is insufficient. The validated JetBrains smoke test has configured diversity `yes`, but actual model identity and heterogeneous execution `unknown`.
 
 ## Deterministic orchestration invariant
 

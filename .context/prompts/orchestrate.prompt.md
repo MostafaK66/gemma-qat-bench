@@ -1,4 +1,4 @@
-# Orchestrate a Planning Workflow (V1)
+# Orchestrate a Planning Workflow (V1 / V1.5)
 
 Use this prompt to run Orchestration V1 for a non-trivial task when you want an evidence-based plan plus independent plan review before implementation.
 
@@ -91,9 +91,19 @@ Revision accounting remains:
 - iteration 2 = revision 1
 - iteration 3 = revision 2
 
-## Execution mode and model metadata
+## Execution mode, delegation, and model metadata
 
 Record only what is known from runtime evidence.
+
+Choose and record a requested execution mode before invoking specialist phases:
+
+- `chat-simulation`: Planner and Plan Critic run sequentially in this main Copilot conversation/session; independent model control is not guaranteed.
+- `ide-custom-agent`: use `.github/agents/planner.agent.md` and `.github/agents/plan-critic.agent.md` when custom-agent discovery and delegation are available. The mechanism name is runtime-specific; in the validated JetBrains environment it is `run_subagent`. The profiles provide repository read/search capability only through `list_dir`, `read_file`, `file_search`, and `grep_search`. The main Copilot Agent/chat remains Orchestrator: invoke Planner, receive `PLAN`, persist it, invoke Plan Critic with the PLAN, receive `PLAN REVIEW`, persist it, then enforce Gate 1.
+- `sdk-sub-agent`: future programmatic mode only; do not claim or emulate SDK-level isolated contexts in V1.5.
+
+For `ide-custom-agent`, concrete profile `model:` values are human-selected runtime configuration and may vary by environment or organization; retain conceptual model slots in generic contracts. Prefer different suitable Planner and Plan Critic model families for medium/high-risk work. Record `configured_model`, `actual_model`, `model_family`, `delegation_verified`, `configured_model_family_diversity`, and `heterogeneous_execution_verified` separately. Configured diversity is `yes` only when configured families are known and distinct; heterogeneous execution is `yes` only when runtime/UI evidence proves actual delegated executions used distinct families. Never infer actual model use from a configured profile value.
+
+If custom-agent discovery or delegated invocation is unavailable, set actual execution mode to `chat-simulation`; record fallback used and its reason; record model independence as unknown/not independently controlled; and continue the existing sequential Planner/Critic workflow. Do not fail Gate 1 solely because heterogeneous execution is unavailable.
 
 For `chat-simulation`, explicitly allow metadata such as:
 
@@ -102,7 +112,7 @@ For `chat-simulation`, explicitly allow metadata such as:
 - model family: not independently controlled / unknown
 - fallback used: not applicable
 
-Do not claim isolated agents or heterogeneous model-family execution unless runtime evidence confirms it.
+Do not claim isolated agents, actual serving models, or heterogeneous model-family execution unless runtime/UI evidence confirms them.
 
 ## Output
 

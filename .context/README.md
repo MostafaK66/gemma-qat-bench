@@ -13,6 +13,9 @@ human-maintained session continuity.
 repository-root/
 ├── .github/
 │   ├── copilot-instructions.md
+│   ├── agents/
+│   │   ├── planner.agent.md
+│   │   └── plan-critic.agent.md
 │   ├── instructions/
 │   │   ├── python.instructions.md
 │   │   ├── tests.instructions.md
