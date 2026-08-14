@@ -34,10 +34,10 @@ repository-root/
 │       └── version-control/SKILL.md
 │
 ├── .context/
-│   ├── AGENT-ROLES.md
+│   ├── AGENT-ROLES.md          # authoritative V1/V1.5 + V2.1 orchestration contract
 │   ├── README.md
-│   ├── handoff-TEMPLATE.md
-│   ├── world-state-TEMPLATE.md
+│   ├── handoff-TEMPLATE.md     # task-scoped V1/V1.5 + V2.1 handoff/state/artifact template
+│   ├── world-state-TEMPLATE.md # world-state template
 │   └── prompts/
 │       ├── orchestrate.prompt.md
 │       ├── plan.prompt.md
@@ -99,3 +99,7 @@ fi
 Never overwrite an existing `.context/world-state.md` with the template. The existing
 file may contain important local session history that is intentionally not tracked by Git.
 
+V1/V1.5 remains a planning-only route that may stop at `PLAN_APPROVED`. V2.1 adds the documented
+FAST/FULL coding contract, but does not yet create or activate production V2.2 Implementer, Verifier,
+or Reviewer profiles/prompts. Task handoffs are Orchestrator-owned observability artifacts, not
+authoritative state stores; `CHANGE_COMPLETE` does not authorize Git mutation.

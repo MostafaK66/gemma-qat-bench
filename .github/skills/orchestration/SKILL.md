@@ -1,297 +1,96 @@
 ---
 name: orchestration
-description: Coordinate specialized agent roles through structured handoffs, independent review gates, bounded retry loops, heterogeneous model strategies, and explicit escalation for non-trivial software changes.
+description: Coordinate V1/V1.5 planning-only and V2.1 FAST/FULL multi-role workflows through structured handoffs, evidence gates, bounded revisions, and explicit escalation.
 ---
 
 # Orchestration
 
-Use this skill to coordinate multi-role workflows where planning quality and review independence matter more than immediate implementation speed.
+Use this skill for workflows where role separation, evidence, and review quality matter. It composes repository skills and prompts; it does not replace them. The authoritative roles/states/gates/classifications/capability-boundaries contract is `.context/AGENT-ROLES.md`; the Orchestrator persists a task-scoped observability artifact at `.context/handoffs/<task-id>.md` from `.context/handoff-TEMPLATE.md`, not a machine-authoritative state store.
 
-## Scope and intent
+## Load and inspect
 
-Orchestration composes existing repository skills and prompts. It does not replace them.
+1. Read `AGENTS.md`, `llms.txt`, `.context/AGENT-ROLES.md`, and this skill.
+2. Inspect relevant source, tests, configuration, CI, documentation, and applicable skills.
+3. Create one Orchestrator-owned task handoff from the template; do not create role-specific handoffs or overwrite local world state.
+4. Record only runtime/model/capability facts evidenced by the environment.
 
-Core principles:
+## Select workflow
 
-- author and critic roles are separate
-- roles use least-privilege tools
-- handoffs use structured artifacts
-- gates return explicit verdicts
-- retry loops are bounded
-- evidence decides gate outcomes
-- unresolved consequential ambiguity escalates to a human
+Create and persist the exact `INTAKE` artifact before any specialist work. Classify risk and choose depth according to the authoritative FAST eligibility rule:
 
-## Execution modes
+- `TRIVIAL_MECHANICAL` may use `FAST` only when every exactness, unique-evidence, <=3 cohesive-file, no-semantic/architecture/security/dependency-impact, and focused-deterministic-verification condition holds.
+- `LOW_RISK`, `STANDARD`, and `HIGH_RISK` use `FULL` initially; HIGH_RISK receives heightened ambiguity/evidence scrutiny.
+- FAST is provisional pending V2.5 calibration evidence. Do not widen it in V2.1.
 
-### Mode A: `chat-simulation`
+If any FAST escalation trigger appears, preserve implementation/evidence only, route into `PLAN -> PLAN_REVIEW -> Gate 1`, and continue FULL. Do not treat prior FAST edits as approved.
 
-- Role separation is enforced by workflow phase and contract.
-- Planner and Plan Critic run sequentially in one chat/session.
-- Isolated sub-agent context is not guaranteed.
-- Independent per-role model assignment is not guaranteed.
-- Do not claim heterogeneous model execution unless runtime evidence exists.
+## V1/V1.5 planning-only (preserved)
 
-### Mode B: `ide-custom-agent` (V1.5 experimental)
-
-- Repository role profiles live under `.github/agents/`.
-- Planner and Plan Critic conceptually require repository read/search capability only. The validated JetBrains profiles use exactly `list_dir`, `read_file`, `file_search`, and `grep_search`; they do not edit, execute commands, mutate Git, delegate, or write handoffs. Generic `read` and `search` aliases are not valid JetBrains profile tools.
-- The normal main Copilot Agent/chat remains Orchestrator and solely owns sequencing, handoff persistence, Gate 1, blocker routing, human clarification, revision counting, and escalation.
-- Custom-agent delegation is runtime-specific. In the validated JetBrains environment it is exposed as `run_subagent`: invoke Planner, persist the returned `PLAN`, then invoke Plan Critic with that artifact.
-- A profile may contain a human-selected, runtime-available role-specific `model:` value. Concrete values are executable runtime configuration and may vary by environment or organization; do not invent or commit placeholders.
-- JetBrains support is preview. This environment validated profile discovery, concrete least-privilege tools, delegated Planner/Critic invocation including revision/re-review, pause/resume, and no-fallback orchestration. Actual serving-model identity still requires runtime/UI evidence; do not claim SDK-level context isolation or heterogeneous execution without that evidence.
-- If profile discovery or delegated invocation is unavailable, use `chat-simulation`, record fallback use and reason, and record model independence as unknown/not independently controlled. This does not fail an otherwise sound Gate 1.
-
-### Mode C: `sdk-sub-agent` (future)
-
-- Parent orchestrator delegates to isolated specialist agents.
-- Each role may receive role-specific prompt, tools, skills, model, and reasoning configuration.
-- Parent enforces role order, gate order, retry budget, and escalation.
-
-## Right-sizing policy
-
-- `trivial`: avoid full orchestration; recommend a lighter workflow and stop.
-- `standard`: run V1 planning workflow.
-- `high-risk`: run V1 planning workflow and explicitly escalate unresolved consequential decisions.
-
-Do not run maximum orchestration ceremony for every task.
-
-## V1 active workflow
-
-V1 is planning-only orchestration:
-
-1. Intake
-2. Planner produces structured `PLAN`
-3. Plan Critic produces structured `PLAN REVIEW`
-4. Gate 1 verdict is evaluated
-5. If needed, bounded revision loop (maximum planner revisions: `2`)
-6. End at `PLAN APPROVED` or `ESCALATE TO HUMAN`
-7. Stop
-
-V1 must not implement product/source code.
-
-## Gate 1 contract
-
-Valid verdicts are exactly:
-
-- `APPROVED`
-- `CHANGES REQUESTED`
-
-No other verdict strings are valid.
-
-Approval invariant:
-
-- `APPROVED` means the plan is implementation-ready as written.
-- The Implementer must not need to make unresolved decisions that could materially change public behavior, API/CLI behavior, configuration semantics, architecture/ownership, security behavior, data behavior, compatibility, acceptance criteria, or intended product behavior.
-
-Blocking-decision rule:
-
-- If an unresolved item could produce materially different outcomes in those areas, it is blocking and verdict must be `CHANGES REQUESTED`.
-- A non-blocking open question may remain under `APPROVED` only when resolving it is mechanical and cannot materially change the approved behavior/design.
-
-Blocking-finding classification (required for every blocking finding):
-
-- `finding_id`
-- `classification` (`EVIDENCE_RESOLVABLE` | `HUMAN_INTENT_REQUIRED`)
-- `decision_question`
-- `impact_scope`
-- `evidence_basis`
-- `required_correction`
-
-Additional required field for `HUMAN_INTENT_REQUIRED`:
-
-- `why_not_uniquely_resolved`
-
-Classification rule:
-
-- `EVIDENCE_RESOLVABLE`: repository evidence uniquely determines the correction without introducing a new product/public-contract/architecture decision.
-- `HUMAN_INTENT_REQUIRED`: repository evidence may constrain options but does not uniquely determine intended behavior, and different reasonable answers could materially change public behavior, contracts, architecture, compatibility, security/data behavior, or acceptance semantics.
-
-## Planner contract
-
-Planner output format:
+V1/V1.5 remains:
 
 ```text
-PLAN
-
-Goal:
-...
-
-Current behavior / evidence:
-...
-
-Owning responsibility:
-...
-
-Files expected to change:
-...
-
-Implementation steps:
-1.
-2.
-3.
-
-Tests / acceptance criteria:
-...
-
-Risks / unknowns:
-...
-
-Out of scope:
-...
-
-Open questions:
-...
+INTAKE -> PLAN -> PLAN_REVIEW -> Gate 1 -> PLAN_APPROVED | AWAITING_HUMAN_CLARIFICATION | ESCALATE_TO_HUMAN
 ```
 
-Planner constraints:
+It stops at `PLAN_APPROVED`. Gate 1 verdicts are exactly `APPROVED` and `CHANGES REQUESTED`; Planner authors and Plan Critic judges; maximum Planner revisions is `2`. Preserve the existing blocker classification and human-clarification routing. Do not implement product code in a planning-only invocation.
 
-- read-only for repository/product files
-- no implementation
-- no self-approval
-- do not invent missing evidence
+`chat-simulation`, `ide-custom-agent`, and future `sdk-sub-agent` are retained. V1.5's validated JetBrains mechanism is `run_subagent`; Planner/Critic use only `list_dir`, `read_file`, `file_search`, and `grep_search`. If their discovery/delegation is unavailable, record chat-simulation fallback as before; do not fabricate independence evidence.
 
-## Plan Critic contract
+## V2.1 coding procedure
 
-Plan Critic output format:
+V2.1 encodes, but does not yet activate, V2.2 production Implementer/Verifier/Reviewer profiles or prompts. Mandatory V2 specialist phases fail closed if their profile/capability is unavailable unless the human explicitly authorizes a documented degraded workflow.
+
+### FAST
 
 ```text
-PLAN REVIEW
-
-Verdict:
-APPROVED | CHANGES REQUESTED
-
-Blocking findings:
-...
-
-Suggestions:
-...
-
-Evidence checked:
-...
-
-Residual risks:
-...
+INTAKE -> IMPLEMENTING -> VERIFYING -> Gate 2 -> CHANGE_COMPLETE
 ```
 
-Plan Critic constraints:
+Verification is mandatory. Gate 1 and Gate 3 are `not_applicable` unless the task escalates to FULL.
 
-- read-only for repository/product files
-- no implementation
-- no silent plan rewrite
-- no confidence-based approvals
-
-Plan Critic must classify every blocking finding using the required fields above.
-
-Plan Critic must explicitly inspect the plan's `Risks / unknowns`, `Open questions`, assumptions, and `Tests / acceptance criteria` before returning `APPROVED`.
-
-For each unresolved item, apply this check:
-
-- Could different reasonable answers cause meaningfully different externally observable behavior, architecture/ownership, compatibility, security/data behavior, or acceptance semantics?
-
-If yes:
-
-- return `CHANGES REQUESTED`
-- record the blocking question
-- cite relevant repository evidence
-- explain why the current plan is not implementation-ready
-- specify the required correction
-
-If repository evidence appears sufficient to resolve the question, Plan Critic still must not rewrite the plan itself; it returns `CHANGES REQUESTED` so Planner can revise the `PLAN`.
-
-If human/product intent is required, Plan Critic must classify that blocker as `HUMAN_INTENT_REQUIRED` and explain why repository evidence is not uniquely resolving.
-
-## Handoff ownership and persistence
-
-Use task-scoped files:
+### FULL
 
 ```text
-.context/handoffs/<task-id>.md
+INTAKE -> PLAN -> PLAN_REVIEW -> Gate 1 -> PLAN_APPROVED
+       -> IMPLEMENTING -> VERIFYING -> Gate 2 -> REVIEWING -> Gate 3 -> CHANGE_COMPLETE
 ```
 
-Do not use a single shared `.context/handoff.md`.
+Update the handoff `STATE SNAPSHOT` after every transition. It is observability only, not machine-authoritative; V3 may introduce that authority.
 
-Ownership boundary:
+### Context minimization
 
-- Planner returns structured plan artifact.
-- Plan Critic returns structured review artifact.
-- Orchestrator writes orchestration state and artifacts to handoff file.
+Do not pass chat transcripts by default. Give Implementer only current plan/FAST intake, human decisions, relevant repository context, and repair findings. Give Verifier plan/intake, actual scope, implementation artifact, criteria, context, and raw brokered evidence. Give Reviewer the approved plan, actual scope/diff, implementation and verification artifacts, and relevant source/tests/docs. Require concise, self-contained, evidence-linked artifacts that identify unknown/unrun/failed evidence.
 
-Specialist roles do not write orchestration-state files.
+### Gate 2
 
-## Model strategy
+Verifier owns the exact `PASSED | FAILED` verdict, not the Orchestrator. A pass requires the complete concrete evidence described in `.context/AGENT-ROLES.md`; absent, unsuccessful, incomplete, or unverifiable required command evidence is `FAILED`. Record finding kind separately from `EVIDENCE_RESOLVABLE | HUMAN_INTENT_REQUIRED`; route environment/tooling failures to `AWAITING_ENVIRONMENT_RESOLUTION` rather than treating them as intent.
 
-Use conceptual model slots, not hard-coded model names:
+The Verifier is production read/search-only: no terminal/get-output, edit tools, Git mutation, or delegation. The main Orchestrator may broker only exact repository-prescribed verification commands through its observable JetBrains approval boundary, then forwards command, working directory, exit/result, and relevant unmodified raw stdout/stderr (or equivalent) to Verifier. Never reinterpret output, omit evidence, silently skip a required command, manufacture output, or substitute an Orchestrator verdict. This preserves independent verification **judgment**, not fully independent verification **execution**, an accepted JetBrains V2 limitation.
 
-- `orchestrator_model`
-- `planner_model`
-- `plan_critic_model`
-- `implementer_model`
-- `verifier_model`
-- `reviewer_model`
+### Gate 3 and repair ordering
 
-Selection order for role-specific model configuration:
+Reviewer owns the exact `APPROVED | CHANGES REQUESTED` Gate 3 judgment and never fixes findings. It evaluates the actual verified implementation and the required scope/correctness/compatibility/test/docs/evidence criteria. If it requests an implementation change, route:
 
-1. role fitness
-2. author/critic independence preference
-3. required capability
-4. availability
-5. cost/latency
-6. explicit fallback recording
+```text
+Orchestrator -> Implementer revision -> Verifier -> Gate 2 -> Reviewer
+```
 
-Preferred medium/high-risk relationship when suitable models are available:
+Every implementation change re-verifies; no documentation/mechanical exception exists in V2.1.
 
-- `family(planner_model) != family(plan_critic_model)`
-- later: `family(implementer_model) != family(reviewer_model)`
+### Budgets, human intent, and failures
 
-If family diversity is unavailable, record reduced independence as residual risk. Do not fail a sound gate for that reason alone. For `ide-custom-agent`, use only human-selected runtime-available profile values. Record `configured_model_family_diversity: yes` only when configured families are known and distinct; differing identifiers alone are insufficient. Record `actual_model` and `model_family` only when exposed by runtime/UI evidence. Record `heterogeneous_execution_verified: yes` only when runtime/UI evidence proves the actual delegated executions used distinct model families; configured diversity alone is insufficient. The validated JetBrains smoke test has configured diversity `yes`, but actual model identity and heterogeneous execution `unknown`.
+Keep Planner and implementation budgets separate. The implementation budget is `2` repairs per approved plan version, shared across Gate 2 and Gate 3; initial implementation is count `0`. Increment only for a delegated repair that may change implementation files. Do not charge waits, verification-only/review-only reruns, or schema-only retries. A material human clarification invalidates the plan, obtains clarification, repeats PLAN/Gate 1, and resets the implementation count only for the new approved plan version.
 
-## Deterministic orchestration invariant
+Raise `HUMAN_INTENT_REQUIRED` only for non-unique evidence plus materially consequential alternative behavior/scope. Consolidate questions and never let Implementer patch an approved plan silently.
 
-Custom agents alone do not enforce workflow correctness.
+For `PROFILE_UNAVAILABLE`, `INVOCATION_FAILED`, `MALFORMED_ARTIFACT`, `AGENT_LOOP_TIMEOUT_OR_LIMIT`, and `TOOL_CAPABILITY_FAILURE`, preserve state/evidence, never infer missing verdicts, and fail closed where mandatory. Allow at most one schema-only retry when no product file changed; second malformed output escalates. Never blindly replay a timed-out phase when implementation files may have changed.
 
-The orchestrator must enforce deterministic:
+## Completion and handoff
 
-- role order
-- gate order
-- retry limits
-- state transitions
-- escalation paths
+At `CHANGE_COMPLETE`, record the template's final commit-preparation summary and usage accounting. FULL completion requires Gates 2 and 3; FAST records Gate 3 `not_applicable` and clearly says completion is based on Gate 2. `CHANGE_COMPLETE` authorizes no Git operation. A later version-control workflow requires explicit human intent and independently checks Git state.
 
-Routing rule after `CHANGES REQUESTED`:
+## Capability and model boundaries
 
-- If any blocking finding is `HUMAN_INTENT_REQUIRED` (including mixed blocker sets), Orchestrator must transition to `AWAITING_HUMAN_CLARIFICATION` before any Planner revision.
-- During `AWAITING_HUMAN_CLARIFICATION`, Orchestrator records pending human decision questions and preserves all outstanding `EVIDENCE_RESOLVABLE` findings for later revision.
-- Orchestrator resumes Planner revision only after explicit human clarification is captured and passed to Planner as authoritative requirement(s), together with outstanding `EVIDENCE_RESOLVABLE` findings.
-- Only the creation of a revised `PLAN` consumes revision budget; waiting/routing/clarification handling does not.
+Use the V2.0 capability evidence in `.context/AGENT-ROLES.md` exactly: delegated read/search and `insert_edit_into_file` validated; delegated `apply_patch` not validated/capability insufficient; `create_file` not yet validated; delegated terminal execution validated but its approval enforcement was not observed and is insufficient for production Verifier; main-Orchestrator terminal approval was observed. Model-family diversity is independent from correctness and must be recorded only when evidenced.
 
-When `CHANGES REQUESTED` depends on missing user/product intent rather than missing repository inspection, the orchestrator must pause and request human clarification before the next Planner revision.
-
-Waiting for human clarification does not consume planner revision budget by itself.
-
-Revision budget accounting remains:
-
-- iteration 1 = initial plan
-- iteration 2 = revision 1
-- iteration 3 = revision 2
-
-## Failure handling
-
-If a role fails:
-
-1. capture failure evidence
-2. record failure in handoff state
-3. retry only within configured budget
-4. otherwise escalate
-
-Never continue as if a failed phase succeeded.
-
-## Boundaries
-
-Do not:
-
-- mutate product/source files in V1 orchestration
-- bypass blocked gates to make progress
-- fabricate model/runtime metadata
-- claim checks succeeded without evidence
-
-Orchestration is a control layer; it must not become the deliverable.
+Do not bypass gates, fabricate runtime/model/command evidence, give a production Verifier delegated terminal access, activate V2.2 profiles/prompts early, or mutate source during V1 planning-only work.

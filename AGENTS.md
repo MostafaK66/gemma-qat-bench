@@ -562,7 +562,7 @@ Load the most relevant skill for detailed procedures:
 | README/docs/API documentation | `.github/skills/documentation/SKILL.md` |
 | Maintain or extend agent-framework assets | `.github/skills/agent-framework-maintenance/SKILL.md` |
 | Performance/ML benchmark work | `.github/skills/benchmarking/SKILL.md` |
-| Multi-role orchestrated planning workflows | `.github/skills/orchestration/SKILL.md` |
+| Multi-role orchestration workflows (V1/V1.5 planning or V2.1 FAST/FULL) | `.github/skills/orchestration/SKILL.md` |
 | Prepare commits, branch integration, and Git safety workflows | `.github/skills/version-control/SKILL.md` |
 
 If a routed skill file does not exist, fall back to the relevant section of this
@@ -593,18 +593,22 @@ Do not prefer:
 - `refactor/benchmark-runner`
 - `docs/update-readme`
 
-### 16.2 Orchestration V1 boundary (`gemma-qat-bench`)
+### 16.2 Orchestration boundary (`gemma-qat-bench`)
 
-Orchestration V1 is planning-only and exists to validate protocol quality before any
-implementation work.
+V1/V1.5 remains planning-only: it performs planning plus independent plan review, may stop at
+`PLAN_APPROVED`, and does not execute product/source implementation.
 
-- Run workflow via `.github/skills/orchestration/SKILL.md` and the orchestration
-  prompts in `.context/prompts/`.
-- V1 performs planning plus independent plan review, then stops at `PLAN APPROVED`
-  or escalates to a human.
-- V1 does not execute product/source implementation.
-- Detailed role, gate, model, and handoff contracts live in
-  `.context/AGENT-ROLES.md`, not in this file.
+V2.1 encodes the post-Gate-1 coding protocol (INTAKE right-sizing, FAST/FULL routing, Gates 2/3,
+evidence brokering, revision/failure routing, and handoff state) without activating the future V2.2
+Implementer, Verifier, or Reviewer custom-agent profiles/prompts. V2 mandatory specialist phases
+fail closed unless a human explicitly authorizes a documented degraded workflow.
+
+- Run the applicable workflow via `.github/skills/orchestration/SKILL.md` and
+  `.context/prompts/orchestrate.prompt.md`.
+- Detailed role, gate, model, runtime-capability, and handoff contracts live in
+  `.context/AGENT-ROLES.md` and `.context/handoff-TEMPLATE.md`, not in this file.
+- `CHANGE_COMPLETE` authorizes no Git mutation; separately authorized version-control workflow is
+  required for commit preparation.
 
 ### Reusable task templates
 

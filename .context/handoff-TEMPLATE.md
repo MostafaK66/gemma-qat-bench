@@ -5,61 +5,98 @@ Created:
 Requested execution mode: `chat-simulation` | `ide-custom-agent` | `sdk-sub-agent`
 Actual execution mode: `chat-simulation` | `ide-custom-agent` | `sdk-sub-agent`
 Source branch/context:
-Current state: `INTAKE` | `PLAN` | `PLAN_REVIEW` | `AWAITING_HUMAN_CLARIFICATION` | `PLAN APPROVED` | `ESCALATE TO HUMAN`
 
-## Task
+> This is an Orchestrator-owned, task-scoped observability artifact at `.context/handoffs/<task-id>.md`. It is not a machine-authoritative state store; do not invent unknown values. Specialists do not write it.
 
-- User request:
-- Intended outcome:
-- In scope:
-- Out of scope:
+## INTAKE
 
-## Classification
+```text
+INTAKE
 
-Type:
-Risk:
-Orchestration depth:
+Task:
 
-## Execution / model metadata
+Requested outcome:
 
-Record known metadata only; do not invent runtime details.
+Constraints and explicit out-of-scope:
 
-| Role | Custom-agent profile (if used) | `configured_model` (if known) | `actual_model` (if runtime/UI known) | `model_family` (if runtime/UI known) | Reasoning config (if known) |
+Public-contract / operational impact:
+none | ...
+
+Risk classification:
+TRIVIAL_MECHANICAL | LOW_RISK | STANDARD | HIGH_RISK
+
+Selected orchestration depth:
+FAST | FULL
+
+Evidence-based rationale:
+
+Known ambiguities:
+none | ...
+
+Human decisions already supplied:
+none | ...
+
+Expected changed-file scope:
+
+Escalation triggers:
+```
+
+## STATE SNAPSHOT
+
+> Update on every transition. This compact block is an observability aid only, not a machine-authoritative state store; V3 may replace it.
+
+```text
+current_state:
+selected_orchestration_depth:
+plan_version:
+planner_revisions_used:
+implementation_revisions_used:
+gate_1_verdict:
+gate_2_verdict:
+gate_3_verdict:
+waiting_reason:
+last_transition:
+```
+
+Use explicit values such as `not_started`, `not_applicable`, and `unknown` rather than inventing data.
+
+## Execution / model / delegation evidence
+
+Record known metadata only; do not infer runtime details.
+
+| Role | Profile (if used) | `configured_model` | `actual_model` (runtime/UI only) | `model_family` (runtime/UI only) | Tool/capability evidence |
 | --- | --- | --- | --- | --- | --- |
 | Orchestrator |  | `orchestrator_model` |  |  |  |
 | Planner |  | `planner_model` |  |  |  |
 | Plan Critic |  | `plan_critic_model` |  |  |  |
+| Implementer | not activated in V2.1 | `implementer_model` | unknown | unknown |  |
+| Verifier | not activated in V2.1 | `verifier_model` | unknown | unknown | read/search-only; no terminal/edit/Git/delegation |
+| Reviewer | not activated in V2.1 | `reviewer_model` | unknown | unknown | read/search-only; no terminal required |
 
-| `delegation_verified` (yes/no/unknown) | `configured_model_family_diversity` (yes/no/unknown) | `heterogeneous_execution_verified` (yes/no/unknown) | `fallback_used` (yes/no/not applicable) | `fallback_reason` |
-| --- | --- | --- | --- | --- |
-|  |  |  |  |  |
+- `delegation_verified`:
+- `configured_model_family_diversity`:
+- `heterogeneous_execution_verified`:
+- `fallback_used`:
+- `fallback_reason`:
+- V2.0 capability limitations / requested vs available:
 
-For V1 chat simulation, explicit placeholders are acceptable, for example:
-
-- actual isolated model: not independently controlled
-- model family: not independently controlled / unknown
-- fallback used: not applicable
-
-For V1.5 IDE custom agents, record `configured_model` from the profile and `actual_model`/`model_family` only from runtime/UI evidence. A configured profile property alone does not verify actual delegated execution or serving-model use. Record `configured_model_family_diversity: yes` only when configured families are known and distinct; different identifiers alone are insufficient. Record `heterogeneous_execution_verified: yes` only when runtime/UI evidence proves actual delegated executions used distinct model families. The validated JetBrains mechanism is `run_subagent`, but delegation mechanism names are runtime-specific.
-
-## Context
+## Context and artifacts
 
 - Key repository evidence reviewed:
 - Applicable instructions/skills:
-- Constraints:
+- Explicit human decisions:
+- Acceptance criteria:
+- Actual changed-file scope:
 
-## Iteration semantics
+Keep passed artifacts concise, self-contained, evidence-linked, and explicit about unknown/unrun/failed evidence. Do not copy whole chat transcripts.
 
-- Iteration 1 = initial plan
-- Iteration 2 = revision 1
-- Iteration 3 = revision 2 (final allowed revision within V1)
+## Plan versions and Gate 1 history
 
-Budget invariant:
+V1/V1.5 planning-only remains valid and may end at `PLAN_APPROVED`. Gate 1 verdicts are exactly `APPROVED` or `CHANGES REQUESTED`.
 
-- Only creation of a revised `PLAN` consumes revision budget.
-- Entering/waiting/exiting `AWAITING_HUMAN_CLARIFICATION` does not consume revision budget.
+Planner accounting per planning attempt: iteration 1 = initial plan; iteration 2 = revision 1; iteration 3 = revision 2. The maximum is two Planner revisions and three Planner/Plan Critic cycles. Only a revised plan consumes the Planner revision budget; human clarification waiting by itself does not. Keep Planner revisions separate from implementation revisions. A materially changed clarification may require a new plan version while preserving history.
 
-## Plan iteration 1
+### Plan version <n>
 
 ```text
 PLAN
@@ -74,8 +111,6 @@ Files expected to change:
 
 Implementation steps:
 1.
-2.
-3.
 
 Tests / acceptance criteria:
 
@@ -86,7 +121,7 @@ Out of scope:
 Open questions:
 ```
 
-## Plan review iteration 1
+### Gate 1 / plan review for version <n>
 
 ```text
 PLAN REVIEW
@@ -95,6 +130,13 @@ Verdict:
 APPROVED | CHANGES REQUESTED
 
 Blocking findings:
+- finding_id:
+  classification: EVIDENCE_RESOLVABLE | HUMAN_INTENT_REQUIRED
+  decision_question:
+  impact_scope:
+  evidence_basis:
+  required_correction:
+  why_not_uniquely_resolved: (required when classification is HUMAN_INTENT_REQUIRED)
 
 Suggestions:
 
@@ -103,97 +145,180 @@ Evidence checked:
 Residual risks:
 ```
 
-## Plan iteration 2
+| Plan version | Planner iteration / revision | Gate 1 verdict | Finding IDs / classifications | Resulting state |
+| --- | --- | --- | --- | --- |
+|  | iteration 1 / initial plan |  |  |  |
+|  | iteration 2 / revision 1 |  |  |  |
+|  | iteration 3 / revision 2 |  |  |  |
 
-(Use only if revision is required.)
+## Post-plan clarification / invalidation
 
-## Plan review iteration 2
+- State: `PLAN_INVALIDATED` | `AWAITING_HUMAN_CLARIFICATION` | `not_applicable`
+- Triggering specialist/finding:
+- Consolidated consequential decision question(s):
+- Why evidence is not uniquely resolving:
+- Human clarification status / response:
+- New plan version required:
+- Budget effects: human waiting consumes neither planner nor implementation revision budget.
 
-(Use only if revision is required.)
+## Implementation iterations
 
-## Plan iteration 3
+Implementation revision budget per approved plan version: `2`. Initial implementation is revision count `0`; a repair that may change implementation files increments the shared Gate 2/Gate 3 counter. Verification-only, review-only, schema-only, and human/environment waits do not.
 
-(Use only if revision 2 is required.)
+### Implementation iteration <n>
 
-## Plan review iteration 3
+```text
+IMPLEMENTATION
 
-(Use only if revision 2 is required.)
+Plan version / FAST intake reference:
 
-## Pending human clarification
+Implementation iteration:
 
-State:
-`AWAITING_HUMAN_CLARIFICATION` | `not applicable`
+Disposition:
+COMPLETED | HUMAN_INTENT_REQUIRED | BLOCKED
 
-Trigger plan-review iteration:
+Plan/intake steps implemented:
 
-Blocking finding IDs requiring human intent:
+Files changed + purpose:
 
-Blocking classifications:
-`HUMAN_INTENT_REQUIRED`
+Tests added/updated:
 
-Decision question(s):
+Docs/config changes:
 
-Why repository evidence is insufficient:
+Commands actually run:
+passed | failed | not run
 
-Clarification request:
+Deviations from approved plan/intake:
 
-Revision count before wait:
+Open blockers:
 
-## Human clarification response
+Residual risks:
+```
 
-Status:
-`pending` | `received` | `not applicable`
+## Brokered execution evidence
 
-Response source:
-`human`
+The Orchestrator may broker only exact repository-prescribed commands through its observable JetBrains approval boundary. Preserve raw evidence; never reinterpret failures or claim unexecuted commands passed.
 
-Decision:
+| Command | Working directory | Exit/result | Relevant unmodified stdout/stderr or raw-evidence reference | Required? |
+| --- | --- | --- | --- | --- |
+|  |  |  |  |  |
 
-Received at:
+## Gate 2 history — verification
 
-Revision count after wait:
+Gate 2 verdicts are exactly `PASSED` or `FAILED`. Verifier owns the judgment, not the execution broker. `finding_kind` and `resolution_class` are separate.
 
-## Resume mapping
+### Verification iteration <n>
 
-Human decision(s) passed to Planner:
+```text
+VERIFICATION
 
-Outstanding evidence-resolvable findings also passed to Planner:
+Plan/intake version:
 
-Next plan iteration:
+Implementation iteration:
 
-After Plan review iteration 3:
+Verdict:
+PASSED | FAILED
 
-- `APPROVED` -> `PLAN APPROVED`
-- `CHANGES REQUESTED` -> revision budget exhausted -> `ESCALATE TO HUMAN`
+Acceptance criteria checked:
 
-## Gate history
+Brokered commands/evidence reviewed:
 
-| Iteration | Gate | Verdict | Blocking findings summary | Blocking classifications | Resulting state |
-| --- | --- | --- | --- | --- | --- |
-| 1 | Gate 1 (Plan Review) |  |  |  |  |
-| 2 | Gate 1 (Plan Review) |  |  |  |  |
-| 3 | Gate 1 (Plan Review) |  |  |  |  |
+Findings (finding_kind + resolution_class):
 
-Maximum planner revision budget: `2` (initial plan + up to 2 revisions = up to 3 plan/review cycles).
+Environment limitations:
 
-## Open questions
+Residual risks:
+```
 
--
+| Verification iteration | Gate 2 verdict | Finding kinds / resolution classes | Resulting state |
+| --- | --- | --- | --- |
+|  |  |  |  |
 
-## Final V1 handoff
+## Gate 3 history — implementation review
 
-- Final state: `PLAN APPROVED` | `ESCALATE TO HUMAN`
-- Revision count used:
-- Why stopped:
+FAST: `not_applicable`. FULL verdicts are exactly `APPROVED` or `CHANGES REQUESTED`. Any implementation change requested here must return through Verifier and Gate 2 before re-review.
+
+### Implementation review iteration <n>
+
+```text
+IMPLEMENTATION REVIEW
+
+Plan version:
+
+Implementation iteration:
+
+Verdict:
+APPROVED | CHANGES REQUESTED
+
+Evidence reviewed:
+
+Blocking findings:
+
+Scope assessment:
+
+Correctness / compatibility / tests / docs assessment:
+
+Residual risks:
+```
+
+| Review iteration | Gate 3 verdict | Blocking findings | Resulting state |
+| --- | --- | --- | --- |
+|  |  |  |  |
+
+## Environment/runtime failures
+
+| Failure taxonomy | State/artifacts preserved | Requested capability | Available capability | Routing / next action |
+| --- | --- | --- | --- | --- |
+| `PROFILE_UNAVAILABLE` |  |  |  | fail closed |
+| `INVOCATION_FAILED` |  |  |  | preserve; do not skip role |
+| `MALFORMED_ARTIFACT` |  |  |  | one schema-only retry only if no product files changed; second escalates |
+| `AGENT_LOOP_TIMEOUT_OR_LIMIT` |  |  |  | preserve partial evidence; do not blindly replay changed files |
+| `TOOL_CAPABILITY_FAILURE` |  |  |  | fail closed when mandatory |
+
+## USAGE ACCOUNTING
+
+```text
+Specialist invocations:
+- Planner:
+- Plan Critic:
+- Implementer:
+- Verifier:
+- Reviewer:
+
+Planner revisions:
+Implementation revisions:
+Verification reruns:
+Review reruns:
+Schema-only retries:
+Human clarification count:
+
+Started at:
+Completed at:
+Elapsed time:
+
+Runtime/UI request or quota information:
+not exposed | ...
+
+Monetary cost:
+not exposed | ...
+```
+
+Invocation counts are the default cost proxy. Do not fabricate monetary cost.
+
+## FINAL COMMIT-PREPARATION SUMMARY
+
+- Approved plan / FAST intake reference:
+- Final changed-file scope:
+- Final Gate 2 verdict and evidence:
+- Final Gate 3 verdict: (`not_applicable` for FAST)
 - Residual risks:
-- Human follow-up requested:
+- Git authorization: **No Git mutation is authorized by this orchestration outcome.**
 
-## Reserved future sections
+`CHANGE_COMPLETE` is ready for human handoff or separately authorized commit preparation only. It is not staged, committed, pushed, merged, or deployed. The later version-control workflow requires explicit human intent and independently inspects Git status/diff.
 
-The sections below are inactive in V1 and reserved for future expansion.
+## Final outcome
 
-### Implementation (inactive in V1)
-
-### Verification (inactive in V1)
-
-### Code review (inactive in V1)
+- Final state: `PLAN_APPROVED` | `CHANGE_COMPLETE` | `AWAITING_ENVIRONMENT_RESOLUTION` | `ESCALATE_TO_HUMAN`
+- Why stopped/completed:
+- FAST-path completion based on Gate 2 (if applicable):
+- Residual risks and human follow-up:
