@@ -1,6 +1,6 @@
 ---
 name: orchestration
-description: Coordinate V1/V1.5 planning-only and V2.1 FAST/FULL multi-role workflows through structured handoffs, evidence gates, bounded revisions, and explicit escalation.
+description: Coordinate V1/V1.5 planning-only and V2.2 FAST/FULL multi-role workflows through structured handoffs, evidence gates, bounded revisions, and explicit escalation.
 ---
 
 # Orchestration
@@ -20,7 +20,7 @@ Create and persist the exact `INTAKE` artifact before any specialist work. Class
 
 - `TRIVIAL_MECHANICAL` may use `FAST` only when every exactness, unique-evidence, <=3 cohesive-file, no-semantic/architecture/security/dependency-impact, and focused-deterministic-verification condition holds.
 - `LOW_RISK`, `STANDARD`, and `HIGH_RISK` use `FULL` initially; HIGH_RISK receives heightened ambiguity/evidence scrutiny.
-- FAST is provisional pending V2.5 calibration evidence. Do not widen it in V2.1.
+- FAST is provisional pending V2.5 calibration evidence. Do not widen it in V2.2.
 
 If any FAST escalation trigger appears, preserve implementation/evidence only, route into `PLAN -> PLAN_REVIEW -> Gate 1`, and continue FULL. Do not treat prior FAST edits as approved.
 
@@ -36,23 +36,25 @@ It stops at `PLAN_APPROVED`. Gate 1 verdicts are exactly `APPROVED` and `CHANGES
 
 `chat-simulation`, `ide-custom-agent`, and future `sdk-sub-agent` are retained. V1.5's validated JetBrains mechanism is `run_subagent`; Planner/Critic use only `list_dir`, `read_file`, `file_search`, and `grep_search`. If their discovery/delegation is unavailable, record chat-simulation fallback as before; do not fabricate independence evidence.
 
-## V2.1 coding procedure
+## V2.2 coding procedure
 
-V2.1 encodes, but does not yet activate, V2.2 production Implementer/Verifier/Reviewer profiles or prompts. Mandatory V2 specialist phases fail closed if their profile/capability is unavailable unless the human explicitly authorizes a documented degraded workflow.
+V2.2 activates production Implementer/Verifier/Reviewer profiles and prompts. Mandatory V2 specialist phases fail closed if their profile/capability is unavailable unless the human explicitly authorizes a documented degraded workflow.
+
+In `ide-custom-agent` mode, the Orchestrator delegates every required specialist phase through `run_subagent`; specialists do not delegate specialists.
 
 ### FAST
 
 ```text
-INTAKE -> IMPLEMENTING -> VERIFYING -> Gate 2 -> CHANGE_COMPLETE
+INTAKE -> Implementer -> verification-command broker (Orchestrator) -> Verifier -> Gate 2 -> CHANGE_COMPLETE
 ```
 
-Verification is mandatory. Gate 1 and Gate 3 are `not_applicable` unless the task escalates to FULL.
+Verification is mandatory. Gate 1 and Gate 3 are `not_applicable` unless FAST escalates to FULL.
 
 ### FULL
 
 ```text
-INTAKE -> PLAN -> PLAN_REVIEW -> Gate 1 -> PLAN_APPROVED
-       -> IMPLEMENTING -> VERIFYING -> Gate 2 -> REVIEWING -> Gate 3 -> CHANGE_COMPLETE
+INTAKE -> Planner -> Plan Critic -> Gate 1 -> PLAN_APPROVED
+       -> Implementer -> verification-command broker (Orchestrator) -> Verifier -> Gate 2 -> Reviewer -> Gate 3 -> CHANGE_COMPLETE
 ```
 
 Update the handoff `STATE SNAPSHOT` after every transition. It is observability only, not machine-authoritative; V3 may introduce that authority.
@@ -75,7 +77,7 @@ Reviewer owns the exact `APPROVED | CHANGES REQUESTED` Gate 3 judgment and never
 Orchestrator -> Implementer revision -> Verifier -> Gate 2 -> Reviewer
 ```
 
-Every implementation change re-verifies; no documentation/mechanical exception exists in V2.1.
+Every implementation change re-verifies; no documentation/mechanical exception exists in V2.2.
 
 ### Budgets, human intent, and failures
 
@@ -91,6 +93,6 @@ At `CHANGE_COMPLETE`, record the template's final commit-preparation summary and
 
 ## Capability and model boundaries
 
-Use the V2.0 capability evidence in `.context/AGENT-ROLES.md` exactly: delegated read/search and `insert_edit_into_file` validated; delegated `apply_patch` not validated/capability insufficient; `create_file` not yet validated; delegated terminal execution validated but its approval enforcement was not observed and is insufficient for production Verifier; main-Orchestrator terminal approval was observed. Model-family diversity is independent from correctness and must be recorded only when evidenced.
+Use the V2.0 capability evidence in `.context/AGENT-ROLES.md` exactly: delegated read/search, `insert_edit_into_file`, and `create_file` validated; delegated `apply_patch` not validated/capability insufficient; delegated terminal execution validated but its approval enforcement was not observed and is insufficient for production specialists; main-Orchestrator terminal approval was observed. Model-family diversity is independent from correctness and must be recorded only when evidenced.
 
-Do not bypass gates, fabricate runtime/model/command evidence, give a production Verifier delegated terminal access, activate V2.2 profiles/prompts early, or mutate source during V1 planning-only work.
+Do not bypass gates, fabricate runtime/model/command evidence, give a production Verifier delegated terminal access, allow nested specialist delegation, or mutate source during V1 planning-only work.

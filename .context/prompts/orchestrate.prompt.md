@@ -1,4 +1,4 @@
-# Orchestrate a V1/V1.5 Planning or V2.1 Coding Workflow
+# Orchestrate a V1/V1.5 Planning or V2.2 Coding Workflow
 
 Use this prompt to coordinate: `<task description>`.
 
@@ -15,7 +15,8 @@ Use this prompt to coordinate: `<task description>`.
 - Create one Orchestrator-owned `.context/handoffs/<task-id>.md` from the template. Specialists return artifacts; they never persist handoffs.
 - Keep `STATE SNAPSHOT` current on every transition, using `not_started`, `not_applicable`, or `unknown` rather than invented data. It is observability only, not a machine-authoritative V2 state store.
 - Preserve V1/V1.5 planning-only behavior: it may end at `PLAN_APPROVED` after Gate 1 and must not implement product code.
-- V2.1 encodes the coding protocol but does not create/activate V2.2 Implementer, Verifier, or Reviewer profiles/prompts. If a mandatory V2 specialist is unavailable, fail closed unless the human explicitly authorizes a documented degraded workflow.
+- V2.2 activates production Implementer, Verifier, and Reviewer specialist profiles/prompts. If a mandatory specialist is unavailable, fail closed unless the human explicitly authorizes a documented degraded workflow.
+- In `ide-custom-agent` mode, delegate every required specialist phase through `run_subagent`; do not allow nested specialist delegation.
 - Do not silently substitute Orchestrator judgment for a required specialist judgment.
 
 ## INTAKE and routing
@@ -32,17 +33,17 @@ Immediately escalate FAST to FULL if scope grows; a public/output/config/compati
 INTAKE -> PLAN -> PLAN_REVIEW -> Gate 1 -> PLAN_APPROVED | AWAITING_HUMAN_CLARIFICATION | ESCALATE_TO_HUMAN
 ```
 
-**V2.1 FAST:**
+**V2.2 FAST:**
 
 ```text
-INTAKE -> IMPLEMENTING -> VERIFYING -> Gate 2 -> CHANGE_COMPLETE
+INTAKE -> Implementer -> verification-command broker (Orchestrator) -> Verifier -> Gate 2 -> CHANGE_COMPLETE
 ```
 
-**V2.1 FULL:**
+**V2.2 FULL:**
 
 ```text
-INTAKE -> PLAN -> PLAN_REVIEW -> Gate 1 -> PLAN_APPROVED
-       -> IMPLEMENTING -> VERIFYING -> Gate 2 -> REVIEWING -> Gate 3 -> CHANGE_COMPLETE
+INTAKE -> Planner -> Plan Critic -> Gate 1 -> PLAN_APPROVED
+       -> Implementer -> verification-command broker (Orchestrator) -> Verifier -> Gate 2 -> Reviewer -> Gate 3 -> CHANGE_COMPLETE
 ```
 
 Gate 1 stays exactly `APPROVED | CHANGES REQUESTED`, with Planner author, Plan Critic judge, and Planner revision budget `2`. Any human-intent blocker pauses before planning revision.
@@ -53,7 +54,7 @@ Gate 3 is exactly `APPROVED | CHANGES REQUESTED`; Reviewer independently judges 
 
 ## Verification execution broker
 
-The future production Verifier is read/search-only and receives no `run_in_terminal`, `get_terminal_output`, edit tool, Git mutation, or `run_subagent`. Under current JetBrains evidence, the main Orchestrator may broker exact repository-prescribed commands only through its observable human approval boundary. Capture and transfer exact command, working directory, exit/result, and relevant unmodified raw stdout/stderr (or equivalent). Do not omit, reinterpret, fabricate, or silently skip evidence; do not substitute an Orchestrator Gate 2 verdict.
+The production Verifier is read/search-only and receives no `run_in_terminal`, `get_terminal_output`, edit tool, Git mutation, or `run_subagent`. Under current JetBrains evidence, the main Orchestrator may broker exact repository-prescribed commands only through its observable human approval boundary. Capture and transfer exact command, working directory, exit/result, and relevant unmodified raw stdout/stderr (or equivalent). Do not omit, reinterpret, fabricate, or silently skip evidence; do not substitute an Orchestrator Gate 2 verdict.
 
 V2 preserves independent verification judgment, not fully independent verification execution. Do not claim SDK-enforced least privilege equivalence.
 

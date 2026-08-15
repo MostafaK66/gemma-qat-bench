@@ -42,7 +42,7 @@ the user's explicit request.
 - documentation → `.github/skills/documentation/SKILL.md`
 - agent-framework maintenance → `.github/skills/agent-framework-maintenance/SKILL.md`
 - benchmarking → `.github/skills/benchmarking/SKILL.md`
-- multi-role orchestration (V1/V1.5 planning or V2.1 FAST/FULL) → `.github/skills/orchestration/SKILL.md`
+- multi-role orchestration (V1/V1.5 planning or V2.2 FAST/FULL) → `.github/skills/orchestration/SKILL.md`
 - version control / Git workflows → `.github/skills/version-control/SKILL.md`
 
 If a routed skill or prompt file does not exist, fall back to the relevant guidance
@@ -74,6 +74,6 @@ Examples:
 - `use the critique-plan prompt` → `.context/prompts/critique-plan.prompt.md`
 - `use the new-project prompt` → `.context/prompts/new-project.prompt.md`
 
-For orchestration, preserve V1/V1.5 planning-only behavior. V2.1 contracts are defined in
-`.context/AGENT-ROLES.md` and `.context/handoff-TEMPLATE.md`; V2.1 does not activate future V2.2
-Implementer, Verifier, or Reviewer profiles/prompts. `CHANGE_COMPLETE` never authorizes Git mutation.
+For orchestration, preserve V1/V1.5 planning-only behavior. V2.1 contracts and V2.2 active
+specialist-profile routing are defined in `.context/AGENT-ROLES.md` and
+`.context/handoff-TEMPLATE.md`; `CHANGE_COMPLETE` never authorizes Git mutation.

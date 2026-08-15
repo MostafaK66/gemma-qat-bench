@@ -562,7 +562,7 @@ Load the most relevant skill for detailed procedures:
 | README/docs/API documentation | `.github/skills/documentation/SKILL.md` |
 | Maintain or extend agent-framework assets | `.github/skills/agent-framework-maintenance/SKILL.md` |
 | Performance/ML benchmark work | `.github/skills/benchmarking/SKILL.md` |
-| Multi-role orchestration workflows (V1/V1.5 planning or V2.1 FAST/FULL) | `.github/skills/orchestration/SKILL.md` |
+| Multi-role orchestration workflows (V1/V1.5 planning or V2.2 FAST/FULL) | `.github/skills/orchestration/SKILL.md` |
 | Prepare commits, branch integration, and Git safety workflows | `.github/skills/version-control/SKILL.md` |
 
 If a routed skill file does not exist, fall back to the relevant section of this
@@ -598,10 +598,10 @@ Do not prefer:
 V1/V1.5 remains planning-only: it performs planning plus independent plan review, may stop at
 `PLAN_APPROVED`, and does not execute product/source implementation.
 
-V2.1 encodes the post-Gate-1 coding protocol (INTAKE right-sizing, FAST/FULL routing, Gates 2/3,
-evidence brokering, revision/failure routing, and handoff state) without activating the future V2.2
-Implementer, Verifier, or Reviewer custom-agent profiles/prompts. V2 mandatory specialist phases
-fail closed unless a human explicitly authorizes a documented degraded workflow.
+V2.1 defines the post-Gate-1 coding protocol contract (INTAKE right-sizing, FAST/FULL routing,
+Gates 2/3, evidence brokering, revision/failure routing, and handoff state). V2.2 activates
+production Implementer, Verifier, and Reviewer custom-agent profiles/prompts under that contract.
+V2 mandatory specialist phases fail closed unless a human explicitly authorizes a documented degraded workflow.
 
 - Run the applicable workflow via `.github/skills/orchestration/SKILL.md` and
   `.context/prompts/orchestrate.prompt.md`.

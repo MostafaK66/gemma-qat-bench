@@ -27,10 +27,10 @@ model-quality benchmark.
 - `.github/copilot-instructions.md` — concise always-on GitHub Copilot instructions
 - `.github/instructions/*.instructions.md` — automatic path-specific instructions for
   source code, tests, documentation, and configuration
-- `.github/agents/` — active V1.5 Planner/Plan Critic custom-agent profiles; V2.1 does not yet add production coding-role profiles
+- `.github/agents/` — active custom-agent profiles for Planner, Plan Critic, Implementer, Verifier, and Reviewer
 - `.github/skills/` — native reusable Copilot skills for specialized engineering tasks
 - `.context/prompts/*.prompt.md` — reusable task templates
-- `.context/AGENT-ROLES.md` — authoritative V1/V1.5 and V2.1 orchestration role, gate, state, and runtime-capability contract
+- `.context/AGENT-ROLES.md` — authoritative V1/V1.5 and V2 orchestration role, gate, state, and runtime-capability contract
 - `.context/handoff-TEMPLATE.md` — tracked task-scoped orchestration handoff/state/artifact template
 - `.context/world-state-TEMPLATE.md` — template for optional gitignored working state
 - `.context/README.md` — how to use local world state and reusable task prompts
@@ -78,7 +78,10 @@ gemma-qat-bench/
 │   ├── copilot-instructions.md
 │   ├── agents/
 │   │   ├── planner.agent.md
-│   │   └── plan-critic.agent.md
+│   │   ├── plan-critic.agent.md
+│   │   ├── implementer.agent.md
+│   │   ├── verifier.agent.md
+│   │   └── reviewer.agent.md
 │   ├── instructions/
 │   │   ├── python.instructions.md
 │   │   ├── tests.instructions.md
@@ -117,6 +120,9 @@ gemma-qat-bench/
 │       ├── orchestrate.prompt.md
 │       ├── plan.prompt.md
 │       ├── critique-plan.prompt.md
+│       ├── implement.prompt.md
+│       ├── verify.prompt.md
+│       ├── review-implementation.prompt.md
 │       ├── new-project.prompt.md
 │       ├── implement-feature.prompt.md
 │       ├── refactor.prompt.md

@@ -5,8 +5,9 @@ This file is the authoritative role, tool, gate, state, classification, and capa
 ## Versioned workflow boundary
 
 - **V1/V1.5:** planning-only. They may stop at `PLAN_APPROVED` after Gate 1; no product implementation is activated.
-- **V2.1:** defines the production coding protocol conceptually, including FAST/FULL routing and Gates 2/3. It does **not** create or activate V2.2 Implementer, Verifier, or Reviewer custom-agent profiles/prompts.
-- V2.1 FULL uses the V1/V1.5 plan and Gate 1 contract unchanged, then may proceed only when the required specialist roles are available under the contract. Mandatory V2 specialist phases fail closed; the Orchestrator never silently substitutes its own execution unless the human explicitly authorizes a documented degraded workflow.
+- **V2.1:** defines the coding protocol contract (INTAKE, FAST/FULL, Gates 2/3, budgets, brokered verification evidence, and failure routing).
+- **V2.2:** activates production `ide-custom-agent` specialist profiles/prompts for Implementer, Verifier, and Reviewer under least-privilege boundaries.
+- V2 FULL uses the V1/V1.5 plan and Gate 1 contract unchanged, then proceeds through mandatory specialist phases. Mandatory phases fail closed; the Orchestrator never silently substitutes its own specialist judgment unless the human explicitly authorizes a documented degraded workflow.
 
 ## Execution modes
 
@@ -17,9 +18,12 @@ This file is the authoritative role, tool, gate, state, classification, and capa
 
 ### `ide-custom-agent`
 
-- V1.5 profiles live under `.github/agents/`. The validated Planner and Plan Critic profiles declare exactly `list_dir`, `read_file`, `file_search`, and `grep_search`; they do not edit, execute commands, mutate Git, delegate, or write handoffs.
+- Active profiles live under `.github/agents/`: Planner, Plan Critic, Implementer, Verifier, and Reviewer.
+- Planner and Plan Critic declare exactly `list_dir`, `read_file`, `file_search`, and `grep_search`; they do not edit, execute commands, mutate Git, delegate, or write handoffs.
+- Implementer declares only `list_dir`, `read_file`, `file_search`, `grep_search`, `insert_edit_into_file`, and `create_file`.
+- Verifier and Reviewer are read/search-only and declare exactly `list_dir`, `read_file`, `file_search`, and `grep_search`.
 - In the validated JetBrains environment the main Copilot Agent/chat delegates through `run_subagent`, receives artifacts, and alone persists the handoff and enforces routing.
-- V2.1 extends this mode conceptually but does not activate V2 production profiles. If a future mandatory V2 profile is unavailable, fail closed rather than silently replacing that role.
+- In `ide-custom-agent` mode, the Orchestrator delegates required specialist phases through `run_subagent`. Specialists do not delegate other specialists.
 
 ### `sdk-sub-agent` (future)
 
@@ -30,12 +34,12 @@ This file is the authoritative role, tool, gate, state, classification, and capa
 - Delegated read/search (`list_dir`, `read_file`, `file_search`, `grep_search`): **validated**.
 - Delegated `insert_edit_into_file`: **validated** in a controlled edit probe.
 - Delegated `apply_patch`: **not validated; capability insufficient in the probe**.
-- Delegated `create_file`: **not yet validated**.
+- Delegated `create_file`: **validated** in a controlled probe.
 - Delegated `run_in_terminal`: execution capability **validated**.
 - Delegated terminal human-approval enforcement: **not observed; insufficient for a production Verifier**.
 - Main-Orchestrator terminal human approval: **observed**.
 
-Do not generalize beyond this evidence. V2.1's future production Verifier must be read/search-only and receive neither terminal/get-output, edit, Git-mutation, nor `run_subagent` capability.
+Do not generalize beyond this evidence. The production Verifier must be read/search-only and receive neither terminal/get-output, edit, Git-mutation, nor `run_subagent` capability.
 
 ## Roles and ownership
 
@@ -44,9 +48,9 @@ Do not generalize beyond this evidence. V2.1's future production Verifier must b
 | Orchestrator | Own INTAKE, handoff, sequencing, state snapshot, budgets, evidence transfer, gates/routing, and escalation | No, except handoff persistence | Main read/search and handoff persistence; may broker exact repository-prescribed verification commands through the observable JetBrains approval boundary | active |
 | Planner | Author the evidence-based plan | No | read/search-only | active V1/V1.5 |
 | Plan Critic | Judge the plan at Gate 1 | No | read/search-only | active V1/V1.5 |
-| Implementer | Execute approved plan or FAST intake and return implementation artifact | Yes, future V2.2 profile only | scoped implementation tools, not yet provisioned | contract only |
-| Verifier | Independently judge Gate 2 from repository, artifacts, and brokered raw evidence | No | read/search-only only; no terminal, edit, Git mutation, or delegation | contract only |
-| Reviewer | Independently judge Gate 3 from verified implementation | No | read/search-only; no terminal required | contract only |
+| Implementer | Execute approved FULL plan or authorized FAST intake and return implementation artifact | Yes, within approved scope only | `list_dir`, `read_file`, `file_search`, `grep_search`, `insert_edit_into_file`, `create_file`; no terminal, `apply_patch`, delegation, or Git mutation | active V2.2 |
+| Verifier | Independently judge Gate 2 from repository, artifacts, and brokered raw evidence | No | read/search-only; no terminal, edit, delegation, or Git mutation | active V2.2 |
+| Reviewer | Independently judge Gate 3 from verified implementation | No | read/search-only; no terminal, edit, delegation, or Git mutation | active V2.2 |
 
 Only the Orchestrator writes `.context/handoffs/<task-id>.md`; specialists return concise structured artifacts and never persist handoffs.
 
@@ -107,17 +111,17 @@ INTAKE -> PLAN -> PLAN_REVIEW -> Gate 1 -> PLAN_APPROVED | AWAITING_HUMAN_CLARIF
 
 It stops at `PLAN_APPROVED`.
 
-V2.1 FAST:
+Active V2 FAST:
 
 ```text
-INTAKE -> IMPLEMENTING -> VERIFYING -> Gate 2 -> CHANGE_COMPLETE
+INTAKE -> Implementer -> verification-command broker (Orchestrator) -> Verifier -> Gate 2 -> CHANGE_COMPLETE
 ```
 
-V2.1 FULL:
+Active V2 FULL:
 
 ```text
-INTAKE -> PLAN -> PLAN_REVIEW -> Gate 1 -> PLAN_APPROVED
-       -> IMPLEMENTING -> VERIFYING -> Gate 2 -> REVIEWING -> Gate 3 -> CHANGE_COMPLETE
+INTAKE -> Planner -> Plan Critic -> Gate 1 -> PLAN_APPROVED
+       -> Implementer -> verification-command broker (Orchestrator) -> Verifier -> Gate 2 -> Reviewer -> Gate 3 -> CHANGE_COMPLETE
 ```
 
 This prose is not machine-authoritative. The compact handoff `STATE SNAPSHOT` is likewise observability only.
@@ -141,7 +145,7 @@ Gate 2 findings use both `finding_kind` and `resolution_class` without conflatio
 
 ### Execution broker
 
-The future delegated Verifier independently owns Gate 2 judgment but not command execution. The main Orchestrator brokers only exact repository-prescribed quality commands through its observed human approval boundary, captures exact command, working directory, exit/result, and relevant unmodified raw stdout/stderr (or equivalent), and transfers that evidence to Verifier. It must not reinterpret failures, omit evidence, manufacture output, silently skip commands, or substitute its own Gate 2 verdict. V2 preserves independent verification judgment, **not** fully independent verification execution; this accepted JetBrains limitation is not equivalent to future SDK-enforced least privilege.
+The delegated Verifier independently owns Gate 2 judgment but not command execution. The main Orchestrator brokers only exact repository-prescribed quality commands through its observed human approval boundary, captures exact command, working directory, exit/result, and relevant unmodified raw stdout/stderr (or equivalent), and transfers that evidence to Verifier. It must not reinterpret failures, omit evidence, manufacture output, silently skip commands, or substitute its own Gate 2 verdict. V2 preserves independent verification judgment, **not** fully independent verification execution; this accepted JetBrains limitation is not equivalent to future SDK-enforced least privilege.
 
 ## Gate 3 — implementation review
 
@@ -173,4 +177,19 @@ The completion handoff records `FINAL COMMIT-PREPARATION SUMMARY`: approved plan
 
 ## Model policy
 
-Use conceptual slots (`orchestrator_model`, `planner_model`, `plan_critic_model`, `implementer_model`, `verifier_model`, `reviewer_model`). Model-family diversity is a preference, not a correctness gate; record known configuration and runtime evidence separately and do not fabricate actual model identity or heterogeneous execution.
+Use conceptual slots (`orchestrator_model`, `planner_model`, `plan_critic_model`, `implementer_model`, `verifier_model`, `reviewer_model`). Record configured and runtime evidence separately.
+
+Configured model map:
+
+- Planner: `Claude Opus 4.6 (copilot)`
+- Plan Critic: `GPT-5.6 Terra (copilot)`
+- Implementer: `GPT-5.3-Codex (copilot)`
+- Verifier: `Claude Sonnet 5 (copilot)`
+- Reviewer: `Claude Opus 4.6 (copilot)`
+
+Model evidence boundaries:
+
+- `configured_model`: known from profile configuration.
+- `actual_model`: `unknown` unless runtime/UI evidence exposes it.
+- `configured_model_family_diversity`: yes for Implementer vs Verifier and Implementer vs Reviewer.
+- `heterogeneous_execution_verified`: `unknown` unless runtime evidence proves heterogeneous execution.

@@ -15,7 +15,10 @@ repository-root/
 │   ├── copilot-instructions.md
 │   ├── agents/
 │   │   ├── planner.agent.md
-│   │   └── plan-critic.agent.md
+│   │   ├── plan-critic.agent.md
+│   │   ├── implementer.agent.md
+│   │   ├── verifier.agent.md
+│   │   └── reviewer.agent.md
 │   ├── instructions/
 │   │   ├── python.instructions.md
 │   │   ├── tests.instructions.md
@@ -34,14 +37,17 @@ repository-root/
 │       └── version-control/SKILL.md
 │
 ├── .context/
-│   ├── AGENT-ROLES.md          # authoritative V1/V1.5 + V2.1 orchestration contract
+│   ├── AGENT-ROLES.md          # authoritative V1/V1.5 + V2 orchestration contract
 │   ├── README.md
-│   ├── handoff-TEMPLATE.md     # task-scoped V1/V1.5 + V2.1 handoff/state/artifact template
+│   ├── handoff-TEMPLATE.md     # task-scoped V1/V1.5 + V2 handoff/state/artifact template
 │   ├── world-state-TEMPLATE.md # world-state template
 │   └── prompts/
 │       ├── orchestrate.prompt.md
 │       ├── plan.prompt.md
 │       ├── critique-plan.prompt.md
+│       ├── implement.prompt.md
+│       ├── verify.prompt.md
+│       ├── review-implementation.prompt.md
 │       ├── new-project.prompt.md
 │       ├── implement-feature.prompt.md
 │       ├── refactor.prompt.md
@@ -99,7 +105,7 @@ fi
 Never overwrite an existing `.context/world-state.md` with the template. The existing
 file may contain important local session history that is intentionally not tracked by Git.
 
-V1/V1.5 remains a planning-only route that may stop at `PLAN_APPROVED`. V2.1 adds the documented
-FAST/FULL coding contract, but does not yet create or activate production V2.2 Implementer, Verifier,
-or Reviewer profiles/prompts. Task handoffs are Orchestrator-owned observability artifacts, not
-authoritative state stores; `CHANGE_COMPLETE` does not authorize Git mutation.
+V1/V1.5 remains a planning-only route that may stop at `PLAN_APPROVED`. V2.1 defines the documented
+FAST/FULL coding contract, and V2.2 activates production Implementer, Verifier, and Reviewer
+profiles/prompts under that contract. Task handoffs are Orchestrator-owned observability artifacts,
+not authoritative state stores; `CHANGE_COMPLETE` does not authorize Git mutation.
