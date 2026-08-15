@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+from collections.abc import Callable
 from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
@@ -195,14 +196,31 @@ def _require_server_binary(config: AppConfig) -> None:
         )
 
 
-def _emit_report(report: BenchmarkReport, results_dir: Path) -> None:
+def _select_report_basename(results_dir: Path, stamp: str) -> str:
+    base = f"benchmark-{stamp}"
+    attempt = 1
+    while True:
+        candidate = base if attempt == 1 else f"{base}-{attempt}"
+        json_path = results_dir / f"{candidate}.json"
+        md_path = results_dir / f"{candidate}.md"
+        if not json_path.exists() and not md_path.exists():
+            return candidate
+        attempt += 1
+
+
+def _emit_report(
+    report: BenchmarkReport,
+    results_dir: Path,
+    now: Callable[[], datetime] = datetime.now,
+) -> None:
     print()
     print(report.to_console())
 
     results_dir.mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    json_path = results_dir / f"benchmark-{stamp}.json"
-    md_path = results_dir / f"benchmark-{stamp}.md"
+    stamp = now().strftime("%Y%m%d-%H%M%S")
+    basename = _select_report_basename(results_dir, stamp)
+    json_path = results_dir / f"{basename}.json"
+    md_path = results_dir / f"{basename}.md"
     json_path.write_text(json.dumps(report.to_json_dict(), indent=2), encoding="utf-8")
     md_path.write_text(report.to_markdown(), encoding="utf-8")
     print(f"\nSaved: {json_path}\n       {md_path}")

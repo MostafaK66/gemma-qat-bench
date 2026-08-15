@@ -395,6 +395,8 @@ results/
 └── benchmark-YYYYMMDD-HHMMSS.md
 ```
 
+If a run lands in the same second as an existing report pair, numeric suffixes are used in order (`-2`, `-3`, ...), for example `benchmark-YYYYMMDD-HHMMSS-2.json` and `.md`.
+
 Example console summary:
 
 ```text
