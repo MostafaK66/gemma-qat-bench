@@ -70,7 +70,7 @@ Acceptance criteria checked:
   evidence:
 
 Brokered commands reviewed:
-- command:
+- command: exact executed command copied verbatim from brokered evidence
   working_directory:
   result:
   relevant_output:
@@ -91,5 +91,22 @@ none | ...
 Residual risks:
 none | ...
 ```
+
+For `Brokered commands reviewed`, `command:` means the exact command actually executed per the Orchestrator's brokered evidence. Copy that value character-for-character (verbatim).
+
+Do not shorten, widen, normalize, reconstruct, substitute, rewrite into a preferred form, or replace with a logical label/human-readable description. The Verifier reviews the actual execution record, not a command category/description.
+
+If brokered evidence does not provide an exact executable command string, or command identity is ambiguous, do not guess or reconstruct. Mark the evidence insufficient and, when that evidence is required, return Gate 2 `FAILED` using the existing finding taxonomy.
+
+Examples:
+
+- Brokered: `python -m pytest tests/test_cli.py -q`
+  - Valid artifact `command:`: `python -m pytest tests/test_cli.py -q`
+  - Invalid: `pytest`, `python -m pytest`, or any changed arguments/scope.
+- Brokered: `python -m ruff check tests/test_cli.py`
+  - Valid artifact `command:`: `python -m ruff check tests/test_cli.py`
+  - Invalid: `ruff check .`, `ruff`, or any changed scope.
+
+Historical substitutions such as `pytest` and `ruff check .` remain invalid when the brokered commands were more specific.
 
 `PASSED` is allowed only when every required verification condition has sufficient, successful, independently reviewable evidence.
