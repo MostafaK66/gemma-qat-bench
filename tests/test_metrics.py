@@ -5,8 +5,14 @@ from __future__ import annotations
 import pytest
 
 from conftest import chat_response
+from gemma_qat_bench import metrics
 from gemma_qat_bench.config import ModelSpec
-from gemma_qat_bench.metrics import AggregatedMetrics, RunMetrics
+from gemma_qat_bench.metrics import (
+    AggregatedMetrics,
+    RunMetrics,
+    _opt_float,
+    _optional_float,
+)
 
 
 def _spec(is_qat: bool = False) -> ModelSpec:
@@ -95,3 +101,15 @@ def test_aggregate_token_counts_from_last_run():
 def test_aggregate_empty_runs_raises():
     with pytest.raises(ValueError):
         AggregatedMetrics.from_runs(_spec(), [])
+
+
+def test_private_optional_float_alias_keeps_backward_compatibility():
+    assert _opt_float is _optional_float
+
+    for helper in (_optional_float, _opt_float):
+        assert helper(None) is None
+        assert helper(7) == 7.0
+        assert helper("9.5") == 9.5
+
+    assert "_optional_float" not in metrics.__all__
+    assert "_opt_float" not in metrics.__all__

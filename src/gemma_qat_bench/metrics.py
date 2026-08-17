@@ -82,8 +82,8 @@ class RunMetrics:
                 usage.get("completion_tokens", timings.get("predicted_n", 0)) or 0
             ),
             wall_time_s=float(wall_time_s),
-            server_prompt_per_s=_opt_float(timings.get("prompt_per_second")),
-            server_gen_per_s=_opt_float(timings.get("predicted_per_second")),
+            server_prompt_per_s=_optional_float(timings.get("prompt_per_second")),
+            server_gen_per_s=_optional_float(timings.get("predicted_per_second")),
             response_text=_extract_text(payload),
         )
 
@@ -140,8 +140,11 @@ class AggregatedMetrics:
         )
 
 
-def _opt_float(value: Any) -> float | None:
+def _optional_float(value: Any) -> float | None:
     return None if value is None else float(value)
+
+
+_opt_float = _optional_float
 
 
 def _stdev(values: Sequence[float]) -> float:
