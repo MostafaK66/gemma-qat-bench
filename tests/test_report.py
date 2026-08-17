@@ -1,13 +1,39 @@
 """Tests for :mod:`gemma_qat_bench.report`."""
 
-from __future__ import annotations
+from pathlib import Path
 
 import pytest
 
 from conftest import chat_response
+from gemma_qat_bench import report as report_module
 from gemma_qat_bench.config import AppConfig, ModelSpec
 from gemma_qat_bench.metrics import AggregatedMetrics, RunMetrics
 from gemma_qat_bench.report import BenchmarkReport, ComparisonSummary
+
+
+def test_report_module_uses_explicit_string_annotations():
+    source = Path(report_module.__file__).read_text(encoding="utf-8")
+    assert "from __future__ import annotations" not in source
+
+    assert ComparisonSummary.__annotations__["baseline_key"] == "str"
+    assert ComparisonSummary.__annotations__["vram_saved_pct"] == "float | None"
+
+    from_pair_annotations = ComparisonSummary.from_pair.__annotations__
+    assert from_pair_annotations == {
+        "baseline": "AggregatedMetrics",
+        "qat": "AggregatedMetrics",
+        "return": "ComparisonSummary",
+    }
+
+    assert BenchmarkReport.__annotations__["results"] == "tuple[AggregatedMetrics, ...]"
+    assert BenchmarkReport.__annotations__["created_at"] == "str"
+
+    build_annotations = BenchmarkReport.build.__annotations__
+    assert build_annotations["results"] == "Sequence[AggregatedMetrics]"
+    assert build_annotations["config"] == "AppConfig"
+    assert build_annotations["quantization"] == "str"
+    assert build_annotations["created_at"] == "str | None"
+    assert build_annotations["return"] == "BenchmarkReport"
 
 
 def _agg(

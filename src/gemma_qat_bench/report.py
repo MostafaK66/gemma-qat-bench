@@ -6,8 +6,6 @@ tutorial's headline numbers). Rendering to console, Markdown, and a
 JSON-serialisable dict lives here so the runner stays focused on measurement.
 """
 
-from __future__ import annotations
-
 from collections.abc import Sequence
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
@@ -21,22 +19,22 @@ from .metrics import AggregatedMetrics
 class ComparisonSummary:
     """Baseline (non-QAT) vs QAT deltas."""
 
-    baseline_key: str
-    qat_key: str
-    baseline_gen_per_s: float
-    qat_gen_per_s: float
-    gen_speedup_pct: float
-    baseline_wall_s: float
-    qat_wall_s: float
-    baseline_vram_mib: int | None
-    qat_vram_mib: int | None
-    vram_saved_mib: int | None
-    vram_saved_pct: float | None
+    baseline_key: "str"
+    qat_key: "str"
+    baseline_gen_per_s: "float"
+    qat_gen_per_s: "float"
+    gen_speedup_pct: "float"
+    baseline_wall_s: "float"
+    qat_wall_s: "float"
+    baseline_vram_mib: "int | None"
+    qat_vram_mib: "int | None"
+    vram_saved_mib: "int | None"
+    vram_saved_pct: "float | None"
 
     @classmethod
     def from_pair(
-        cls, baseline: AggregatedMetrics, qat: AggregatedMetrics
-    ) -> ComparisonSummary:
+        cls, baseline: "AggregatedMetrics", qat: "AggregatedMetrics"
+    ) -> "ComparisonSummary":
         speedup = _pct_change(baseline.mean_gen_per_s, qat.mean_gen_per_s)
         vram_saved, vram_pct = _vram_delta(
             baseline.vram_used_mib, qat.vram_used_mib
@@ -60,21 +58,21 @@ class ComparisonSummary:
 class BenchmarkReport:
     """Full result set for one benchmark invocation."""
 
-    results: tuple[AggregatedMetrics, ...]
-    prompt: str
-    max_tokens: int
-    quantization: str
-    created_at: str
+    results: "tuple[AggregatedMetrics, ...]"
+    prompt: "str"
+    max_tokens: "int"
+    quantization: "str"
+    created_at: "str"
 
     @classmethod
     def build(
         cls,
-        results: Sequence[AggregatedMetrics],
-        config: AppConfig,
+        results: "Sequence[AggregatedMetrics]",
+        config: "AppConfig",
         *,
-        quantization: str = "UD-Q4_K_XL",
-        created_at: str | None = None,
-    ) -> BenchmarkReport:
+        quantization: "str" = "UD-Q4_K_XL",
+        created_at: "str | None" = None,
+    ) -> "BenchmarkReport":
         return cls(
             results=tuple(results),
             prompt=config.benchmark.prompt,
@@ -84,7 +82,7 @@ class BenchmarkReport:
         )
 
     @property
-    def comparison(self) -> ComparisonSummary | None:
+    def comparison(self) -> "ComparisonSummary | None":
         """Pair the first non-QAT baseline with the first QAT result, if both exist."""
         baseline = next((r for r in self.results if not r.is_qat), None)
         qat = next((r for r in self.results if r.is_qat), None)
@@ -94,7 +92,7 @@ class BenchmarkReport:
 
     # -- rendering ---------------------------------------------------------- #
 
-    def to_json_dict(self) -> dict[str, Any]:
+    def to_json_dict(self) -> "dict[str, Any]":
         comparison = self.comparison
         return {
             "created_at": self.created_at,
@@ -105,7 +103,7 @@ class BenchmarkReport:
             "comparison": asdict(comparison) if comparison else None,
         }
 
-    def to_markdown(self) -> str:
+    def to_markdown(self) -> "str":
         header = (
             "| Metric | " + " | ".join(r.display_name for r in self.results) + " |"
         )
@@ -145,7 +143,7 @@ class BenchmarkReport:
             lines += _comparison_lines(comparison, bullet="- ")
         return "\n".join(lines) + "\n"
 
-    def to_console(self) -> str:
+    def to_console(self) -> "str":
         labels = [
             "Model",
             "Gen tok/s",
@@ -178,15 +176,15 @@ class BenchmarkReport:
 # --------------------------------------------------------------------------- #
 
 
-def _pct_change(baseline: float, new: float) -> float:
+def _pct_change(baseline: "float", new: "float") -> "float":
     if baseline == 0:
         return 0.0
     return (new - baseline) / baseline * 100.0
 
 
 def _vram_delta(
-    baseline: int | None, qat: int | None
-) -> tuple[int | None, float | None]:
+    baseline: "int | None", qat: "int | None"
+) -> "tuple[int | None, float | None]":
     if baseline is None or qat is None:
         return None, None
     saved = baseline - qat
@@ -194,7 +192,7 @@ def _vram_delta(
     return saved, pct
 
 
-def _aggregate_to_dict(agg: AggregatedMetrics) -> dict[str, Any]:
+def _aggregate_to_dict(agg: "AggregatedMetrics") -> "dict[str, Any]":
     data = asdict(agg)
     # Expand nested RunMetrics with their derived properties for completeness.
     data["runs"] = [
@@ -209,15 +207,15 @@ def _aggregate_to_dict(agg: AggregatedMetrics) -> dict[str, Any]:
     return data
 
 
-def _md_row(label: str, cells: Sequence[str]) -> str:
+def _md_row(label: "str", cells: "Sequence[str]") -> "str":
     return f"| {label} | " + " | ".join(cells) + " |"
 
 
-def _fmt_vram(value: int | None) -> str:
+def _fmt_vram(value: "int | None") -> "str":
     return "n/a" if value is None else str(value)
 
 
-def _comparison_lines(summary: ComparisonSummary, *, bullet: str) -> list[str]:
+def _comparison_lines(summary: "ComparisonSummary", *, bullet: "str") -> "list[str]":
     lines = [
         f"{bullet}Generation speed: {summary.baseline_gen_per_s:.2f} -> "
         f"{summary.qat_gen_per_s:.2f} tok/s ({summary.gen_speedup_pct:+.1f}%)",
@@ -240,11 +238,11 @@ def _comparison_lines(summary: ComparisonSummary, *, bullet: str) -> list[str]:
     return lines
 
 
-def _fixed_width_table(header: Sequence[str], rows: Sequence[Sequence[str]]) -> str:
+def _fixed_width_table(header: "Sequence[str]", rows: "Sequence[Sequence[str]]") -> "str":
     columns = list(zip(header, *rows, strict=True)) if rows else [(h,) for h in header]
     widths = [max(len(str(cell)) for cell in col) for col in columns]
 
-    def fmt(cells: Sequence[str]) -> str:
+    def fmt(cells: "Sequence[str]") -> "str":
         return "  ".join(
             str(c).ljust(w) for c, w in zip(cells, widths, strict=True)
         )
