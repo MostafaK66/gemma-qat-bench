@@ -110,7 +110,9 @@ class JsonFileWorkflowStore:
         return self._directory / f"{task_id}.json"
 
     def save(self, snapshot: WorkflowSnapshot) -> None:
-        self._directory.mkdir(parents=True, exist_ok=True)
+        # Match the mode-0600 checkpoint files: a state directory this store
+        # creates should not be listable by other users.
+        self._directory.mkdir(mode=0o700, parents=True, exist_ok=True)
         payload = asdict(snapshot)
         payload["task_id"] = str(snapshot.task_id)
         payload["state"] = snapshot.state.value
@@ -223,5 +225,11 @@ class JsonFileWorkflowStore:
                 events=events,
                 event_count=int(data["event_count"]),
             )
-        except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        except (
+            AttributeError,
+            KeyError,
+            TypeError,
+            ValueError,
+            json.JSONDecodeError,
+        ) as exc:
             raise DomainError(f"invalid workflow snapshot {path}: {exc}") from exc

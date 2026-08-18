@@ -159,3 +159,23 @@ def test_json_store_rejects_corruption(tmp_path: Path) -> None:
     path.write_text("{}", encoding="utf-8")
     with pytest.raises(DomainError, match="invalid workflow snapshot"):
         JsonFileWorkflowStore(tmp_path).load(TaskId("T-1"))
+
+
+def test_json_store_rejects_wrong_shaped_snapshot_values(tmp_path: Path) -> None:
+    """Regression: a mapping field persisted as a list (for example budgets)
+    raised a raw AttributeError instead of the DomainError corruption signal."""
+    import json
+
+    store = JsonFileWorkflowStore(tmp_path)
+    store.save(snapshot())
+    payload = json.loads((tmp_path / "T-1.json").read_text(encoding="utf-8"))
+    payload["budgets"] = []
+    (tmp_path / "T-1.json").write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(DomainError, match="invalid workflow snapshot"):
+        store.load(TaskId("T-1"))
+
+
+def test_json_store_creates_a_private_state_directory(tmp_path: Path) -> None:
+    state_dir = tmp_path / "state"
+    JsonFileWorkflowStore(state_dir).save(snapshot())
+    assert state_dir.stat().st_mode & 0o777 == 0o700
