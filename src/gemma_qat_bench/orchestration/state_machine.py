@@ -25,14 +25,12 @@ _ALLOWED: dict[WorkflowState, frozenset[WorkflowState]] = {
         {
             WorkflowState.PLANNING,
             WorkflowState.IMPLEMENTATION,
-            WorkflowState.WAITING_AUTHORIZATION,
             WorkflowState.ESCALATED,
         }
     ),
     WorkflowState.IMPLEMENTATION: frozenset(
         {
             WorkflowState.COMMAND_VERIFICATION,
-            WorkflowState.WAITING_AUTHORIZATION,
             WorkflowState.ESCALATED,
             WorkflowState.FAILED,
         }

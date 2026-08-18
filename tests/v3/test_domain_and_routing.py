@@ -157,6 +157,24 @@ def test_state_machine_accepts_only_explicit_transitions() -> None:
         machine.transition(WorkflowState.COMPLETE)
 
 
+def test_waiting_authorization_is_only_reachable_from_command_verification() -> None:
+    """Regression: unused GATE_1/IMPLEMENTATION edges into WAITING_AUTHORIZATION
+    would have allowed resume to enter COMMAND_VERIFICATION without an
+    implementation ever running."""
+    entry_points = [
+        state
+        for state, targets in (
+            (candidate, allowed_transitions(candidate)) for candidate in WorkflowState
+        )
+        if WorkflowState.WAITING_AUTHORIZATION in targets
+    ]
+    assert entry_points == [WorkflowState.COMMAND_VERIFICATION]
+    for state in (WorkflowState.GATE_1, WorkflowState.IMPLEMENTATION):
+        machine = WorkflowMachine(WorkflowDepth.FULL, state)
+        with pytest.raises(InvalidTransition):
+            machine.transition(WorkflowState.WAITING_AUTHORIZATION)
+
+
 def test_fast_escalation_is_explicit_and_guarded() -> None:
     machine = WorkflowMachine(WorkflowDepth.FAST, WorkflowState.GATE_2)
     machine.escalate_fast_to_full()
