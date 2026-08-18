@@ -52,6 +52,11 @@ class SubprocessCommandRunner:
                 check=False,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                # A verification command may legitimately emit non-UTF-8 bytes;
+                # strict decoding would crash the workflow instead of recording
+                # evidence, and every resume would crash the same way.
+                errors="replace",
                 timeout=self._timeout,
             )
         except (OSError, subprocess.SubprocessError) as exc:

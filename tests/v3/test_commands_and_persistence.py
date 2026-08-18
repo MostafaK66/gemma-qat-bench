@@ -61,6 +61,33 @@ def test_command_broker_distinguishes_product_and_environment_failure() -> None:
     )
 
 
+def test_subprocess_runner_tolerates_undecodable_command_output(
+    tmp_path: Path,
+) -> None:
+    """Regression: non-UTF-8 stdout/stderr raised UnicodeDecodeError out of the
+    runner, crashing the workflow on every run and every resume."""
+    import sys
+
+    from gemma_qat_bench.orchestration.commands import SubprocessCommandRunner
+
+    runner = SubprocessCommandRunner(tmp_path)
+    binary_command = RequiredCommand(
+        CommandId("CMD-BIN"),
+        (
+            sys.executable,
+            "-c",
+            "import sys;"
+            "sys.stdout.buffer.write(b'\\xff\\xfe ok');"
+            "sys.stderr.buffer.write(b'\\xff err')",
+        ),
+    )
+    result = runner.run(binary_command)
+    assert result.environment_error is None
+    assert result.exit_code == 0
+    assert "ok" in result.stdout
+    assert "err" in result.stderr
+
+
 def test_command_output_requires_explicit_excerpt_policy() -> None:
     authorization = StaticAuthorization(commands=AuthorizationStatus.AUTHORIZED)
     status_only = CommandBroker(Runner(RunnerResult(0, "secret")), authorization)
