@@ -5,7 +5,6 @@ injection, which lets tests pass a fake session and exercise every branch
 without a network or a running server.
 """
 
-
 from __future__ import annotations
 
 import time
@@ -84,9 +83,7 @@ class LlamaClient:
 
         if response.status_code != 200:
             body = _safe_body(response)
-            raise InferenceError(
-                f"server returned HTTP {response.status_code}: {body}"
-            )
+            raise InferenceError(f"server returned HTTP {response.status_code}: {body}")
         try:
             data = response.json()
         except ValueError as exc:

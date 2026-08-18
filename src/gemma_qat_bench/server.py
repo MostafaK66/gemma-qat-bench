@@ -138,9 +138,7 @@ class ServerManager:
 
     def _wait_until_healthy(self) -> None:
         if self._process is None:
-            raise ServerStartupError(
-                "server process is not available during startup"
-            )
+            raise ServerStartupError("server process is not available during startup")
 
         client = self._client_factory(self.base_url)
         deadline = self._monotonic() + self._config.startup_timeout_s

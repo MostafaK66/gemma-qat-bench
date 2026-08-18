@@ -44,8 +44,18 @@ def test_resolve_default_is_tutorial_config():
 
 def test_resolve_applies_bench_overrides():
     args = _parse(
-        ["bench", "--runs", "5", "--warmup", "0", "--no-vram",
-         "--server-binary", "/opt/llama-server", "--out", "results2"]
+        [
+            "bench",
+            "--runs",
+            "5",
+            "--warmup",
+            "0",
+            "--no-vram",
+            "--server-binary",
+            "/opt/llama-server",
+            "--out",
+            "results2",
+        ]
     )
     config = cli.resolve_config(args)
     assert config.benchmark.n_runs == 5

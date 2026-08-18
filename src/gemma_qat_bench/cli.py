@@ -74,16 +74,24 @@ def build_parser() -> argparse.ArgumentParser:
 def _add_build_args(parser: argparse.ArgumentParser) -> None:
     cuda = parser.add_mutually_exclusive_group()
     cuda.add_argument(
-        "--cuda", dest="cuda", action="store_true", default=None,
+        "--cuda",
+        dest="cuda",
+        action="store_true",
+        default=None,
         help="Force a CUDA (GPU) build.",
     )
     cuda.add_argument(
-        "--no-cuda", dest="cuda", action="store_false", default=None,
+        "--no-cuda",
+        dest="cuda",
+        action="store_false",
+        default=None,
         help="Force a CPU-only build.",
     )
     parser.add_argument("--jobs", type=int, default=None, help="Parallel build jobs.")
     parser.add_argument(
-        "--source-dir", type=Path, default=None,
+        "--source-dir",
+        type=Path,
+        default=None,
         help="Where to clone/build llama.cpp.",
     )
 
@@ -92,15 +100,22 @@ def _add_bench_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--runs", type=int, default=None, help="Measured runs per model.")
     parser.add_argument("--warmup", type=int, default=None, help="Warmup runs per model.")
     parser.add_argument(
-        "--server-binary", type=Path, default=None,
+        "--server-binary",
+        type=Path,
+        default=None,
         help="Path to the llama-server binary.",
     )
     parser.add_argument(
-        "--no-vram", dest="capture_vram", action="store_false", default=None,
+        "--no-vram",
+        dest="capture_vram",
+        action="store_false",
+        default=None,
         help="Skip nvidia-smi VRAM capture.",
     )
     parser.add_argument(
-        "--out", type=Path, default=None,
+        "--out",
+        type=Path,
+        default=None,
         help="Directory for JSON/Markdown results.",
     )
 

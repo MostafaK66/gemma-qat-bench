@@ -69,4 +69,3 @@ orchestrator.
   is canonical. Only brokered, authorized command evidence can satisfy Gate 2.
 - A future provider needs only the capability report and `SpecialistClient` contract;
   no domain or state-machine change is required.
-

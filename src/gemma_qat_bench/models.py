@@ -67,9 +67,7 @@ class ModelManager:
         except ModelDownloadError:
             raise
         except Exception as exc:  # noqa: BLE001 - normalise any backend failure
-            raise ModelDownloadError(
-                f"failed to download {spec.repo_id}: {exc}"
-            ) from exc
+            raise ModelDownloadError(f"failed to download {spec.repo_id}: {exc}") from exc
 
         try:
             return spec.resolve_gguf()

@@ -45,7 +45,10 @@ def _agg(
     wall: float = 5.0,
 ) -> AggregatedMetrics:
     spec = ModelSpec(
-        key=key, display_name=f"Model {key}", repo_id=f"org/{key}", local_dir="d",
+        key=key,
+        display_name=f"Model {key}",
+        repo_id=f"org/{key}",
+        local_dir="d",
         is_qat=is_qat,
     )
     run = RunMetrics.from_response(chat_response(gen_per_s=gen_per_s), wall)

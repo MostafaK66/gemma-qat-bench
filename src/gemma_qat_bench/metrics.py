@@ -69,9 +69,7 @@ class RunMetrics:
         return self.wall_gen_per_s
 
     @classmethod
-    def from_response(
-        cls, payload: Mapping[str, Any], wall_time_s: float
-    ) -> RunMetrics:
+    def from_response(cls, payload: Mapping[str, Any], wall_time_s: float) -> RunMetrics:
         usage = payload.get("usage") or {}
         timings = payload.get("timings") or {}
         return cls(

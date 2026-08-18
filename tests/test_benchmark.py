@@ -30,9 +30,7 @@ def _config(
     base = AppConfig.tutorial_default()
     return replace(
         base,
-        benchmark=replace(
-            BenchmarkConfig(), n_runs=n_runs, warmup_runs=warmup_runs
-        ),
+        benchmark=replace(BenchmarkConfig(), n_runs=n_runs, warmup_runs=warmup_runs),
         capture_vram=capture_vram,
     )
 
@@ -105,9 +103,7 @@ def test_no_warmup_runs_only_measured_calls():
     config = _config(n_runs=3, warmup_runs=0)
     clients = [FakeChatClient(chat_response()), FakeChatClient(chat_response())]
     servers: list[FakeServer] = []
-    runner, _ = _runner(
-        config, clients=clients, servers=servers, vram_values=[100, 90]
-    )
+    runner, _ = _runner(config, clients=clients, servers=servers, vram_values=[100, 90])
 
     runner.run()
     assert clients[0].calls == 3

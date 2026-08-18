@@ -29,8 +29,7 @@ from .exceptions import ConfigError
 # --------------------------------------------------------------------------- #
 
 DEFAULT_PROMPT = (
-    "Explain why quantization-aware training is useful for running LLMs on "
-    "consumer GPUs."
+    "Explain why quantization-aware training is useful for running LLMs on consumer GPUs."
 )
 DEFAULT_SYSTEM_PROMPT = "You are a helpful local AI assistant."
 
@@ -106,8 +105,7 @@ class ServerConfig:
             )
         if self.health_poll_interval_s <= 0:
             raise ConfigError(
-                "health_poll_interval_s must be > 0, "
-                f"got {self.health_poll_interval_s}"
+                f"health_poll_interval_s must be > 0, got {self.health_poll_interval_s}"
             )
 
     @property

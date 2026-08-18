@@ -68,8 +68,7 @@ def test_scenario_1_valid_artifact_contract_shape() -> None:
         text,
         AGENT_ROLES,
         "canonical reconstruction forbidden",
-        "do not recreate, overwrite, or reconstruct authoritative canonical "
-        "field values",
+        "do not recreate, overwrite, or reconstruct authoritative canonical field values",
     )
 
 
@@ -148,8 +147,7 @@ def test_scenario_4_outside_text_and_no_gate2_inference() -> None:
     )
 
 
-def test_scenario_5_qualitative_language_allowed_but_reconstruction_forbidden(
-) -> None:
+def test_scenario_5_qualitative_language_allowed_but_reconstruction_forbidden() -> None:
     text = _read_asset(AGENT_ROLES)
     _assert_clause(
         text,
@@ -161,8 +159,7 @@ def test_scenario_5_qualitative_language_allowed_but_reconstruction_forbidden(
         text,
         AGENT_ROLES,
         "qualitative interpretation in assessment and rationale is allowed",
-        "Compliant qualitative interpretation in `evidence_assessment` and "
-        "`rationale`",
+        "Compliant qualitative interpretation in `evidence_assessment` and `rationale`",
     )
     _assert_regex(
         text,
@@ -193,15 +190,13 @@ def test_scenario_6_post_command_drift_contract() -> None:
         text,
         AGENT_ROLES,
         "post-command pre-verifier recheck",
-        "After commands and before Verifier delegation, recalculate "
-        "fingerprint",
+        "After commands and before Verifier delegation, recalculate fingerprint",
     )
     _assert_clause(
         text,
         AGENT_ROLES,
         "mismatch stale and block verifier",
-        "mark current ledger stale, preserve history, do not delegate "
-        "Verifier",
+        "mark current ledger stale, preserve history, do not delegate Verifier",
     )
     _assert_clause(
         text,
@@ -217,8 +212,7 @@ def test_scenario_7_post_verifier_drift_contract() -> None:
         text,
         AGENT_ROLES,
         "post-verifier pre-gate2 recheck",
-        "After Verifier and before Gate 2 acceptance, recalculate "
-        "fingerprint",
+        "After Verifier and before Gate 2 acceptance, recalculate fingerprint",
     )
     _assert_clause(
         text,
@@ -246,8 +240,7 @@ def test_scenario_8_recovery_drift_contract() -> None:
         text,
         AGENT_ROLES,
         "mismatch does not repair or consume retry",
-        "mark stale, do not repair, do not consume retry budget, fail "
-        "closed",
+        "mark stale, do not repair, do not consume retry budget, fail closed",
     )
     _assert_clause(
         text,
@@ -379,4 +372,3 @@ def test_cross_file_repair_prompt_keeps_precondition_language() -> None:
         "If fingerprint changed: mark prior evidence stale, do not run repair, "
         "do not consume schema-retry budget",
     )
-

@@ -36,9 +36,7 @@ class ComparisonSummary:
         cls, baseline: "AggregatedMetrics", qat: "AggregatedMetrics"
     ) -> "ComparisonSummary":
         speedup = _pct_change(baseline.mean_gen_per_s, qat.mean_gen_per_s)
-        vram_saved, vram_pct = _vram_delta(
-            baseline.vram_used_mib, qat.vram_used_mib
-        )
+        vram_saved, vram_pct = _vram_delta(baseline.vram_used_mib, qat.vram_used_mib)
         return cls(
             baseline_key=baseline.model_key,
             qat_key=qat.model_key,
@@ -104,9 +102,7 @@ class BenchmarkReport:
         }
 
     def to_markdown(self) -> "str":
-        header = (
-            "| Metric | " + " | ".join(r.display_name for r in self.results) + " |"
-        )
+        header = "| Metric | " + " | ".join(r.display_name for r in self.results) + " |"
         divider = "| --- | " + " | ".join("---" for _ in self.results) + " |"
         rows = [
             _md_row("Quantization", [self.quantization for _ in self.results]),
@@ -232,8 +228,7 @@ def _comparison_lines(summary: "ComparisonSummary", *, bullet: "str") -> "list[s
                 f"({abs(pct):.1f}% more than baseline)"
             )
     lines.append(
-        f"{bullet}Wall time: {summary.baseline_wall_s:.3f}s -> "
-        f"{summary.qat_wall_s:.3f}s"
+        f"{bullet}Wall time: {summary.baseline_wall_s:.3f}s -> {summary.qat_wall_s:.3f}s"
     )
     return lines
 
@@ -243,9 +238,7 @@ def _fixed_width_table(header: "Sequence[str]", rows: "Sequence[Sequence[str]]")
     widths = [max(len(str(cell)) for cell in col) for col in columns]
 
     def fmt(cells: "Sequence[str]") -> "str":
-        return "  ".join(
-            str(c).ljust(w) for c, w in zip(cells, widths, strict=True)
-        )
+        return "  ".join(str(c).ljust(w) for c, w in zip(cells, widths, strict=True))
 
     sep = "  ".join("-" * w for w in widths)
     lines = [fmt(header), sep]
