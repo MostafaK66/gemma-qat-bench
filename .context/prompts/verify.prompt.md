@@ -27,7 +27,10 @@ Use this prompt when the Orchestrator delegates Gate 2 verification for task: `<
 - Do not reinterpret missing, incomplete, inconsistent, failed, or unverifiable evidence as success.
 - Do not persist handoffs or invoke other agents.
 - You may inspect the passed canonical ledger context but must not own, persist, modify, execute, or reconstruct it.
-- Do not reproduce or recreate authoritative command strings, working directories, execution results, raw output, `output_handling`, `permitted_evidence_material`, or protected evidence references in your artifact.
+- You may use only `evidence_assessment` and `rationale`, while referring to `command_id`, to qualitatively interpret reviewed canonical evidence (for example, what evidence supports or fails to establish, success/failure, completeness/absence, sufficiency/insufficiency, and why).
+- This qualitative interpretation is non-authoritative and is not canonical recreation.
+- Do not reproduce or recreate authoritative command strings, working directories, execution results, exit-code values, raw/minimal output excerpts, `output_handling`, `permitted_evidence_material`, protected evidence references, or missing canonical values in your artifact.
+- Do not create a competing ledger or any alternate authoritative representation of canonical field values.
 
 Required Gate 2 finding kinds:
 
@@ -98,7 +101,7 @@ none | ...
 
 `Required command evidence assessments` must account for every required command ID exactly once. Use only the four fields shown (`command_id`, `evidence_quality`, `evidence_assessment`, `rationale`).
 
-Do not include canonical ledger fields in this section (including `required_command_set_source`, `exact_executed_command`, `execution_result`, `output_handling`, `permitted_evidence_material`), and do not substitute recreated command text.
+Do not include canonical ledger fields in this section (including `required_command_set_source`, `exact_executed_command`, `execution_result`, `output_handling`, `permitted_evidence_material`), and do not substitute recreated command text. Qualitative interpretation remains allowed only in `evidence_assessment` and `rationale` tied to `command_id`.
 
 If required command identity or binding is ambiguous, unknown, stale, duplicate, or missing, mark evidence insufficient and return `FAILED` with the existing finding taxonomy.
 

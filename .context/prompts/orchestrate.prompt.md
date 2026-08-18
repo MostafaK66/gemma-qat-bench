@@ -62,7 +62,7 @@ Maintain one Orchestrator-owned task-scoped local/gitignored ledger per verifica
 
 Before delegating Verifier, structurally validate ledger completeness and exact current bindings including `required_command_set_source`.
 
-After Verifier returns, validate artifact/reference integrity only: every required `command_id` appears exactly once; no missing/duplicate/unknown/stale IDs; all required assessment fields exist (`command_id`, `evidence_quality`, `evidence_assessment`, `rationale`); and no canonical evidence recreation/overwrite appears. Do not determine evidence sufficiency or Gate 2 verdict.
+After Verifier returns, validate artifact/reference integrity only: every required `command_id` appears exactly once; no missing/duplicate/unknown/stale IDs; all required assessment fields exist (`command_id`, `evidence_quality`, `evidence_assessment`, `rationale`); and no canonical evidence recreation/overwrite appears. Treat compliant qualitative interpretation in `evidence_assessment`/`rationale` as non-malformed (for example, support/failure-to-establish, completeness/absence, sufficiency/insufficiency explanations tied to `command_id`). Orchestrator MUST reject actual duplication or reconstruction of authoritative canonical field values and any competing ledger. Do not determine interpretation correctness, evidence sufficiency, or Gate 2 verdict.
 
 Allow one schema-only retry only when no product files changed; second malformed artifact escalates. Never infer verdicts, reconstruct evidence, or blindly rerun verification after possibly changed implementation.
 
@@ -86,7 +86,7 @@ Handle `PROFILE_UNAVAILABLE`, `INVOCATION_FAILED`, `MALFORMED_ARTIFACT`, `AGENT_
 
 ## Context, artifacts, and final output
 
-Minimize specialist context and require the exact IMPLEMENTATION, VERIFICATION, and IMPLEMENTATION REVIEW fields in the authoritative contract/template. For Verifier, pass task-scoped read-only review context containing relevant current canonical records plus permitted evidence material (not only IDs). Verifier must inspect but neither own nor persist/modify/execute/reconstruct the ledger. Verifier artifacts must not reproduce authoritative `exact_executed_command`, working directories, `execution_result`, raw output, `output_handling`, `permitted_evidence_material`, or protected references.
+Minimize specialist context and require the exact IMPLEMENTATION, VERIFICATION, and IMPLEMENTATION REVIEW fields in the authoritative contract/template. For Verifier, pass task-scoped read-only review context containing relevant current canonical records plus permitted evidence material (not only IDs). Verifier must inspect but neither own nor persist/modify/execute/reconstruct the ledger. Verifier artifacts may use only `evidence_assessment` and `rationale` for qualitative interpretation tied to `command_id`, and must not reproduce authoritative canonical values (`required_command_set_source`, `exact_executed_command`, working directories, `execution_result`, exit codes, raw/minimal output excerpts, `output_handling`, `permitted_evidence_material`, protected references, or missing canonical values) or create a competing ledger.
 
 At `CHANGE_COMPLETE`, persist usage accounting and `FINAL COMMIT-PREPARATION SUMMARY`. It means workflow completion and human handoff readiness only—not staging, committing, pushing, merging, or deploying. Never invoke version-control preparation automatically; it requires later explicit human intent and independent Git inspection.
 

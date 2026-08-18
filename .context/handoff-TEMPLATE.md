@@ -255,7 +255,7 @@ Environment limitations:
 Residual risks:
 ```
 
-Verifier artifact constraint: include every required `command_id` exactly once in `Required command evidence assessments`. Include only `command_id`, `evidence_quality`, `evidence_assessment`, and `rationale`; do not reproduce canonical evidence fields (`required_command_set_source`, `exact_executed_command`, `execution_result`, `output_handling`, `permitted_evidence_material`) or protected references.
+Verifier artifact constraint: include every required `command_id` exactly once in `Required command evidence assessments`. Include only `command_id`, `evidence_quality`, `evidence_assessment`, and `rationale`; do not reproduce canonical evidence fields (`required_command_set_source`, `exact_executed_command`, `execution_result`, `output_handling`, `permitted_evidence_material`) or protected references. Qualitative interpretation is allowed only in `evidence_assessment`/`rationale` tied to `command_id` (for example, support/failure-to-establish, completeness/absence, sufficiency/insufficiency explanations) and remains non-authoritative; do not duplicate/reconstruct canonical values (including working directories, exit codes, raw/minimal output excerpts, missing canonical values) or create a competing ledger.
 
 | Verification iteration | Gate 2 verdict | Finding kinds / resolution classes | Resulting state |
 | --- | --- | --- | --- |
