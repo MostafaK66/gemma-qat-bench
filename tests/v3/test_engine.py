@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import deque
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +15,7 @@ from gemma_qat_bench.orchestration.domain import (
     AuthorizationStatus,
     CommandId,
     CompletionStatus,
+    DomainError,
     FailureKind,
     RequiredCommand,
     RiskLevel,
@@ -622,6 +624,25 @@ def test_required_authorization_pauses_and_authorized_resume_continues(
     assert [event.sequence for event in snapshot.events] == list(
         range(1, snapshot.event_count + 1)
     )
+
+
+def test_resume_rejects_task_spec_changes_against_protected_checkpoint(
+    tmp_path: Path,
+) -> None:
+    spec = task_spec(tmp_path)
+    store = InMemoryWorkflowStore()
+    client = ScriptedSpecialistClient(fast_success_script())
+    waiting = engine(
+        spec,
+        client,
+        store=store,
+        authorization_status=AuthorizationStatus.REQUIRED,
+    ).run(spec)
+    assert waiting.status is CompletionStatus.WAITING_AUTHORIZATION
+
+    changed = replace(spec, description="silently changed after persistence")
+    with pytest.raises(DomainError, match="protected checkpoint"):
+        engine(changed, client, store=store).resume(changed)
 
 
 def test_actual_out_of_scope_change_is_included_then_rejected(tmp_path: Path) -> None:

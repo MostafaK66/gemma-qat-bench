@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from enum import StrEnum
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 from typing import Any
 
 
@@ -220,7 +220,15 @@ def normalize_repository_path(value: str) -> str:
     """Return a safe, normalized repository-relative path."""
     raw = value.replace("\\", "/")
     path = PurePosixPath(raw)
-    if not raw or path.is_absolute() or ".." in path.parts or path == PurePosixPath("."):
+    if (
+        not raw
+        or any(character in raw for character in "\0\n\r\t")
+        or path.is_absolute()
+        or bool(PureWindowsPath(value).drive)
+        or raw.startswith("//")
+        or ".." in path.parts
+        or path == PurePosixPath(".")
+    ):
         raise DomainError(f"unsafe repository-relative path: {value!r}")
     return path.as_posix()
 
@@ -238,7 +246,9 @@ class RequiredCommand:
         if not self.argv or any(not part for part in self.argv):
             raise DomainError("command argv must contain non-empty arguments")
         if (
-            Path(self.cwd).is_absolute()
+            any(character in self.cwd for character in "\0\n\r\t")
+            or Path(self.cwd).is_absolute()
+            or bool(PureWindowsPath(self.cwd).drive)
             or ".." in PurePosixPath(self.cwd.replace("\\", "/")).parts
         ):
             raise DomainError("command cwd must stay within the repository")

@@ -9,7 +9,17 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Protocol, cast
 
-from .domain import DomainError, TaskId, WorkflowDepth, WorkflowState
+from .domain import (
+    CommandId,
+    DomainError,
+    OutputHandling,
+    RequiredCommand,
+    RiskLevel,
+    TaskId,
+    TaskSpec,
+    WorkflowDepth,
+    WorkflowState,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,6 +59,27 @@ class StoredEvent:
 
 
 @dataclass(frozen=True, slots=True)
+class StoredRequiredCommand:
+    command_id: str
+    argv: tuple[str, ...]
+    cwd: str
+    required: bool
+    rationale: str
+    output_handling: str
+
+
+@dataclass(frozen=True, slots=True)
+class StoredTaskSpec:
+    description: str
+    acceptance_criteria: tuple[str, ...]
+    risk: str
+    fast_eligible: bool
+    repository_root: str
+    required_commands: tuple[StoredRequiredCommand, ...]
+    fingerprint_scope: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class WorkflowSnapshot:
     schema_version: int
     task_id: TaskId
@@ -71,10 +102,13 @@ class WorkflowSnapshot:
     escalation: dict[str, str] | None
     events: tuple[StoredEvent, ...]
     event_count: int
+    task_spec: StoredTaskSpec | None = None
 
     def __post_init__(self) -> None:
-        if self.schema_version != 1:
+        if self.schema_version not in {1, 2}:
             raise DomainError("unsupported workflow snapshot schema version")
+        if self.schema_version == 2 and self.task_spec is None:
+            raise DomainError("workflow snapshot schema v2 requires a stored TaskSpec")
         if self.event_count != len(self.events) or tuple(
             event.sequence for event in self.events
         ) != tuple(range(1, self.event_count + 1)):
@@ -188,6 +222,7 @@ class JsonFileWorkflowStore:
                 )
                 for item in data["events"]
             )
+            task_spec = _decode_task_spec(data.get("task_spec"))
             return WorkflowSnapshot(
                 schema_version=int(data["schema_version"]),
                 task_id=TaskId(str(data["task_id"])),
@@ -222,6 +257,157 @@ class JsonFileWorkflowStore:
                 escalation=escalation,
                 events=events,
                 event_count=int(data["event_count"]),
+                task_spec=task_spec,
             )
         except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
             raise DomainError(f"invalid workflow snapshot {path}: {exc}") from exc
+
+
+def store_task_spec(spec: TaskSpec) -> StoredTaskSpec:
+    """Encode the complete validated spec needed for task-ID-only resume."""
+    return StoredTaskSpec(
+        description=spec.description,
+        acceptance_criteria=spec.acceptance_criteria,
+        risk=spec.risk.value,
+        fast_eligible=spec.fast_eligible,
+        repository_root=str(spec.repository_root),
+        required_commands=tuple(
+            StoredRequiredCommand(
+                command_id=str(command.command_id),
+                argv=command.argv,
+                cwd=command.cwd,
+                required=command.required,
+                rationale=command.rationale,
+                output_handling=command.output_handling.value,
+            )
+            for command in spec.required_commands
+        ),
+        fingerprint_scope=spec.fingerprint_scope,
+    )
+
+
+def restore_task_spec(task_id: TaskId, stored: StoredTaskSpec) -> TaskSpec:
+    """Reconstruct a strict TaskSpec from its protected checkpoint representation."""
+    return TaskSpec(
+        task_id=task_id,
+        description=stored.description,
+        acceptance_criteria=stored.acceptance_criteria,
+        risk=RiskLevel(stored.risk),
+        fast_eligible=stored.fast_eligible,
+        repository_root=Path(stored.repository_root),
+        required_commands=tuple(
+            RequiredCommand(
+                command_id=CommandId(command.command_id),
+                argv=command.argv,
+                cwd=command.cwd,
+                required=command.required,
+                rationale=command.rationale,
+                output_handling=OutputHandling(command.output_handling),
+            )
+            for command in stored.required_commands
+        ),
+        fingerprint_scope=stored.fingerprint_scope,
+    )
+
+
+def _decode_task_spec(raw: Any) -> StoredTaskSpec | None:
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise TypeError("task_spec must be an object")
+    data = cast(dict[str, Any], raw)
+    _require_exact_fields(
+        data,
+        {
+            "description",
+            "acceptance_criteria",
+            "risk",
+            "fast_eligible",
+            "repository_root",
+            "required_commands",
+            "fingerprint_scope",
+        },
+        "task_spec",
+    )
+    commands_raw = data["required_commands"]
+    if not isinstance(commands_raw, list):
+        raise TypeError("task_spec.required_commands must be an array")
+    commands: list[StoredRequiredCommand] = []
+    for index, raw_command in enumerate(commands_raw, start=1):
+        if not isinstance(raw_command, dict):
+            raise TypeError(f"task_spec.required_commands[{index}] must be an object")
+        command = cast(dict[str, Any], raw_command)
+        location = f"task_spec.required_commands[{index}]"
+        _require_exact_fields(
+            command,
+            {
+                "command_id",
+                "argv",
+                "cwd",
+                "required",
+                "rationale",
+                "output_handling",
+            },
+            location,
+        )
+        commands.append(
+            StoredRequiredCommand(
+                command_id=_strict_string(
+                    command["command_id"], f"{location}.command_id"
+                ),
+                argv=_strict_strings(command["argv"], f"{location}.argv"),
+                cwd=_strict_string(command["cwd"], f"{location}.cwd"),
+                required=_strict_bool(command["required"], f"{location}.required"),
+                rationale=_strict_string(command["rationale"], f"{location}.rationale"),
+                output_handling=_strict_string(
+                    command["output_handling"], f"{location}.output_handling"
+                ),
+            )
+        )
+    return StoredTaskSpec(
+        description=_strict_string(data["description"], "task_spec.description"),
+        acceptance_criteria=_strict_strings(
+            data["acceptance_criteria"], "task_spec.acceptance_criteria"
+        ),
+        risk=_strict_string(data["risk"], "task_spec.risk"),
+        fast_eligible=_strict_bool(data["fast_eligible"], "task_spec.fast_eligible"),
+        repository_root=_strict_string(
+            data["repository_root"], "task_spec.repository_root"
+        ),
+        required_commands=tuple(commands),
+        fingerprint_scope=_strict_strings(
+            data["fingerprint_scope"], "task_spec.fingerprint_scope"
+        ),
+    )
+
+
+def _require_exact_fields(
+    data: dict[str, Any], expected: set[str], location: str
+) -> None:
+    if set(data) != expected:
+        missing = sorted(expected - data.keys())
+        unknown = sorted(data.keys() - expected)
+        raise TypeError(
+            f"{location} field mismatch; missing={missing}, unknown={unknown}"
+        )
+
+
+def _strict_string(value: Any, location: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise TypeError(f"{location} must be a non-empty string")
+    return value
+
+
+def _strict_strings(value: Any, location: str) -> tuple[str, ...]:
+    if not isinstance(value, list):
+        raise TypeError(f"{location} must be an array")
+    return tuple(
+        _strict_string(item, f"{location}[{index}]")
+        for index, item in enumerate(value, start=1)
+    )
+
+
+def _strict_bool(value: Any, location: str) -> bool:
+    if not isinstance(value, bool):
+        raise TypeError(f"{location} must be a boolean")
+    return value

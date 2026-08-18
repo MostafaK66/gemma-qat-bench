@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -13,7 +15,9 @@ from gemma_qat_bench.orchestration.domain import (
     DomainError,
     OutputHandling,
     RequiredCommand,
+    RiskLevel,
     TaskId,
+    TaskSpec,
     WorkflowDepth,
     WorkflowState,
 )
@@ -21,6 +25,8 @@ from gemma_qat_bench.orchestration.persistence import (
     JsonFileWorkflowStore,
     StoredEvidence,
     WorkflowSnapshot,
+    restore_task_spec,
+    store_task_spec,
 )
 
 
@@ -132,3 +138,49 @@ def test_json_store_rejects_corruption(tmp_path: Path) -> None:
     path.write_text("{}", encoding="utf-8")
     with pytest.raises(DomainError, match="invalid workflow snapshot"):
         JsonFileWorkflowStore(tmp_path).load(TaskId("T-1"))
+
+
+def resumable_task_spec(tmp_path: Path) -> TaskSpec:
+    return TaskSpec(
+        task_id=TaskId("T-1"),
+        description="make the exact tested change",
+        acceptance_criteria=("the focused check passes",),
+        risk=RiskLevel.TRIVIAL_MECHANICAL,
+        fast_eligible=True,
+        repository_root=tmp_path.resolve(),
+        required_commands=(
+            RequiredCommand(
+                CommandId("CMD-001"),
+                ("pytest", "-q"),
+                rationale="focused test",
+                output_handling=OutputHandling.STATUS_ONLY,
+            ),
+        ),
+        fingerprint_scope=("product.py",),
+    )
+
+
+def test_schema_v2_round_trips_complete_protected_task_spec(tmp_path: Path) -> None:
+    spec = resumable_task_spec(tmp_path)
+    expected = replace(snapshot(), schema_version=2, task_spec=store_task_spec(spec))
+    store = JsonFileWorkflowStore(tmp_path / "state")
+    store.save(expected)
+
+    loaded = store.load(spec.task_id)
+    assert loaded == expected
+    assert loaded is not None and loaded.task_spec is not None
+    assert restore_task_spec(spec.task_id, loaded.task_spec) == spec
+
+
+def test_schema_v2_rejects_coerced_task_spec_boolean(tmp_path: Path) -> None:
+    spec = resumable_task_spec(tmp_path)
+    state_dir = tmp_path / "state"
+    store = JsonFileWorkflowStore(state_dir)
+    store.save(replace(snapshot(), schema_version=2, task_spec=store_task_spec(spec)))
+    path = state_dir / "T-1.json"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["task_spec"]["fast_eligible"] = "false"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(DomainError, match="fast_eligible must be a boolean"):
+        store.load(spec.task_id)

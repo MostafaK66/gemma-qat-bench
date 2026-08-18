@@ -42,6 +42,11 @@ V3 does not modify prior V2/V2.5 evaluation outputs or resume model bake-off wor
 | Human authority | Commands, Git, and degraded mode are explicit authorization actions | `authorization` port |
 | Git | `CHANGE_COMPLETE` never authorizes stage, commit, push, merge, or deployment | completion result and CLI output |
 
+Natural-language convenience is an outer boundary, not an exception to these
+invariants. A read-only analyzer returns strict semantic facts; deterministic Python
+validates those facts and compiles the same complete `TaskSpec` consumed by the existing
+engine. The engine never parses or interprets raw natural-language intake.
+
 ## V2 defects converted to regression coverage
 
 | V2 problem | V3 behavior | Regression location |
@@ -66,14 +71,25 @@ V3 does not modify prior V2/V2.5 evaluation outputs or resume model bake-off wor
 - Provider schema enforcement reduces malformed responses but never becomes the local
   source of truth. V3 always validates the captured final response again.
 - Prior orchestration handoffs and world-state files are not product fingerprint scope.
-  The task JSON explicitly authorizes product scope, while the Git delta detector
-  prevents undeclared task changes from being omitted.
+  A compiled or explicit task specification authorizes product scope, while the Git
+  delta detector prevents undeclared task changes from being omitted.
+- Natural-language users do not select a risk enum or FAST eligibility. Structured risk
+  facts feed deterministic `IntakeRiskPolicy`; uncertainty and semantic impact route
+  FULL, and high-risk facts are never downgraded for convenience.
+- Natural-language verification commands are proposals until local policy validates
+  their shell-free argv and repository-contained cwd. The broker still requires a
+  separate human authorization decision before execution.
+- Checkpoint schema v2 stores the complete validated `TaskSpec` for task-ID-only resume.
+  Schema v1 remains readable and resumes through its original explicit task file.
 
 ## Requirement traceability
 
 | V3 requirement area | Implementation |
 | --- | --- |
 | Typed domain and budgets | `domain.py` |
+| Natural-language intake domain and provider port | `intake_domain.py` |
+| Strict intake schema and local parsing | `intake_artifacts.py` |
+| Repository discovery and deterministic task compilation | `intake.py` |
 | State machine and routing | `state_machine.py`, `routing.py` |
 | Specialist protocol and SDK | `specialists.py`, `codex_adapter.py` |
 | Artifact schemas | `artifacts.py` |
@@ -82,5 +98,5 @@ V3 does not modify prior V2/V2.5 evaluation outputs or resume model bake-off wor
 | Fingerprints and actual scope | `fingerprint.py`, `scope.py` |
 | Persistence and resume | `persistence.py`, `runtime.py`, `Orchestrator.resume` |
 | Observability | `events.py` and engine events |
-| CLI | `orchestration/cli.py`, `configs/v3-task.example.json` |
+| Natural-language and advanced explicit CLI | `orchestration/cli.py`, `configs/v3-task.example.json` |
 | Offline verification | `tests/v3/` |

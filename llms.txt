@@ -16,6 +16,7 @@ Primary concerns:
 - aggregate repeated runs
 - compare QAT against a non-QAT baseline
 - render console, Markdown, and JSON reports
+- compile natural-language coding requests into strict internal task specifications
 - run deterministic FAST/FULL coding orchestration with typed Gates, brokered commands,
   canonical evidence, fingerprints, and an optional Codex SDK adapter
 
@@ -71,14 +72,14 @@ gemma-qat-bench/
 │       ├── benchmark.py      end-to-end benchmark orchestration
 │       ├── report.py         comparison + console/Markdown/JSON rendering
 │       ├── cli.py            benchmark argparse commands and config overrides
-│       └── orchestration/    deterministic V3 domain, engine, adapters, and CLI
+│       └── orchestration/    deterministic V3 intake, domain, engine, adapters, and CLI
 ├── tests/
 │   ├── conftest.py           shared fakes/fixtures
 │   ├── test_*.py             offline benchmark/framework tests
 │   └── v3/                   deterministic V3 unit and end-to-end tests
 ├── configs/
 │   ├── tutorial.toml         default Gemma 4 12B QAT/non-QAT benchmark
-│   └── v3-task.example.json  V3 task/command/fingerprint example
+│   └── v3-task.example.json  advanced explicit V3 task specification example
 ├── docs/
 │   ├── v3-orchestration.md   V3 operating and architecture guide
 │   ├── v3-requirements.md    V2-to-V3 freeze and regression map

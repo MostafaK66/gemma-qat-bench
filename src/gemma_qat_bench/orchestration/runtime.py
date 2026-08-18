@@ -43,6 +43,8 @@ from .persistence import (
     StoredValidation,
     WorkflowSnapshot,
     WorkflowStore,
+    restore_task_spec,
+    store_task_spec,
 )
 from .scope import ScopeBaseline
 from .state_machine import WorkflowMachine
@@ -124,6 +126,13 @@ class CheckpointManager:
     def load(self, task_id: TaskId) -> WorkflowSnapshot | None:
         return self._store.load(task_id)
 
+    def load_task_spec(self, task_id: TaskId) -> TaskSpec | None:
+        """Load the protected complete spec for task-ID-only resume."""
+        snapshot = self.load(task_id)
+        if snapshot is None or snapshot.task_spec is None:
+            return None
+        return restore_task_spec(task_id, snapshot.task_spec)
+
     def save(self, runtime: RuntimeState) -> None:
         fingerprint = runtime.fingerprint
         evidence: tuple[StoredEvidence, ...] = ()
@@ -155,7 +164,7 @@ class CheckpointManager:
             }
         self._store.save(
             WorkflowSnapshot(
-                schema_version=1,
+                schema_version=2,
                 task_id=runtime.spec.task_id,
                 state=runtime.machine.state,
                 depth=runtime.machine.depth,
@@ -186,6 +195,7 @@ class CheckpointManager:
                 escalation=escalation,
                 events=tuple(runtime.event_history),
                 event_count=runtime.event_count,
+                task_spec=store_task_spec(runtime.spec),
             )
         )
 
@@ -194,6 +204,12 @@ class CheckpointManager:
             raise DomainError(
                 "resume task specification does not match persisted identity"
             )
+        if snapshot.task_spec is not None:
+            persisted_spec = restore_task_spec(snapshot.task_id, snapshot.task_spec)
+            if persisted_spec != spec:
+                raise DomainError(
+                    "resume task specification does not match the protected checkpoint"
+                )
         budgets = BudgetSet()
         for name, counters in snapshot.budgets.items():
             budget = getattr(budgets, name, None)

@@ -48,16 +48,36 @@ The default configuration reproduces a Gemma 4 12B comparison using the **UD-Q4_
 ### V3 coding orchestration
 
 The repository also includes a deterministic SDK-backed software-development
-orchestrator. Python code owns FAST/FULL routing, the state machine, Gates, strict JSON
-artifacts, bounded revisions, authorized verification commands, canonical evidence,
-content fingerprints, persistence/resume, and escalation. Provider-specific code is
-isolated behind a specialist protocol, with a scripted offline fake and an optional
-Codex Python SDK adapter.
+orchestrator with repository-aware natural-language task intake. From the repository
+root, a normal live workflow starts with only the requested outcome:
 
-Start with [the V3 guide](docs/v3-orchestration.md), the
-[requirements/migration map](docs/v3-requirements.md), and
-[`configs/v3-task.example.json`](configs/v3-task.example.json). The V3 workflow is
-independent of benchmark execution, and `CHANGE_COMPLETE` never grants Git authority.
+```bash
+python -m pip install -e ".[dev,v3-codex]"
+gemma-qat-orchestrate run --description "Improve the CLI error for an invalid task file."
+```
+
+V3 derives and displays the task ID, repository root, acceptance criteria, conservative
+risk/routing decision, narrow file scope, and focused verification commands. The user
+still authorizes the exact generated command set before it runs. Natural-language input
+also works through stdin:
+
+```bash
+printf '%s\n' 'Improve the CLI error for an invalid task file.' \
+  | gemma-qat-orchestrate run --stdin
+```
+
+Python code continues to own FAST/FULL routing, the state machine, Gates, strict JSON
+artifacts, bounded revisions, command authorization, canonical evidence, content
+fingerprints, persistence/resume, and escalation. Provider-specific code is isolated
+behind typed protocols, with scripted offline fakes and an optional Codex Python SDK
+adapter. The original explicit JSON workflow remains available for reproducible and
+advanced use.
+
+Start with [the V3 guide](docs/v3-orchestration.md) and the
+[requirements/migration map](docs/v3-requirements.md). The
+[`configs/v3-task.example.json`](configs/v3-task.example.json) file documents the
+advanced explicit format. The V3 workflow is independent of benchmark execution, and
+`CHANGE_COMPLETE` never grants Git authority.
 
 ---
 
