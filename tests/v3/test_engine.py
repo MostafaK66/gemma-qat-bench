@@ -231,8 +231,10 @@ class Runner:
     ) -> None:
         self.results = deque(results or [RunnerResult(0, "passed")])
         self.mutate = mutate
+        self.commands: list[RequiredCommand] = []
 
     def run(self, command: RequiredCommand) -> RunnerResult:
+        self.commands.append(command)
         if self.mutate is not None:
             self.mutate.write_text("drift", encoding="utf-8")
             self.mutate = None
@@ -624,6 +626,31 @@ def test_required_authorization_pauses_and_authorized_resume_continues(
     assert [event.sequence for event in snapshot.events] == list(
         range(1, snapshot.event_count + 1)
     )
+
+
+def test_resumed_drifted_content_refuses_command_execution(tmp_path: Path) -> None:
+    spec = task_spec(tmp_path)
+    store = InMemoryWorkflowStore()
+    client = ScriptedSpecialistClient(fast_success_script())
+    waiting = engine(
+        spec,
+        client,
+        store=store,
+        authorization_status=AuthorizationStatus.REQUIRED,
+    ).run(spec)
+    assert waiting.status is CompletionStatus.WAITING_AUTHORIZATION
+
+    (tmp_path / "product.py").write_text("changed after authorization", encoding="utf-8")
+    runner = Runner()
+    result = engine(spec, client, runner=runner, store=store).resume(spec)
+
+    assert result.escalation is not None
+    assert result.escalation.failure_kind is FailureKind.FINGERPRINT_DRIFT
+    assert result.escalation.code == "FINGERPRINT_DRIFT_BEFORE_COMMANDS"
+    assert runner.commands == []
+    snapshot = store.load(spec.task_id)
+    assert snapshot is not None
+    assert snapshot.evidence == ()
 
 
 def test_resume_rejects_task_spec_changes_against_protected_checkpoint(

@@ -209,6 +209,37 @@ def test_scripted_cli_runs_and_inspects_fast_workflow(
     assert snapshot["state"] == "COMPLETE"
 
 
+def test_cli_rejects_task_without_a_required_verification_command(
+    tmp_path: Path,
+) -> None:
+    repository_root = Path(__file__).resolve().parents[2]
+    task_file = tmp_path / "task.json"
+    task_file.write_text(
+        json.dumps(
+            {
+                "task_id": "CLI-NO-COMMAND",
+                "description": "exercise fail-closed task validation",
+                "acceptance_criteria": ["the task is rejected"],
+                "risk": "TRIVIAL_MECHANICAL",
+                "fast_eligible": True,
+                "repository_root": str(repository_root),
+                "required_commands": [],
+                "fingerprint_scope": ["pyproject.toml"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    env = environment(repository_root, task_id_suffix="D1E2F3")
+
+    exit_code = main(
+        ["run", str(task_file), "--state-dir", str(tmp_path / "state")],
+        environment=env,
+    )
+
+    assert exit_code == 1
+    assert "at least one required verification command" in env.stderr.getvalue()
+
+
 def test_description_only_cli_compiles_and_runs_without_task_json(
     tmp_path: Path,
 ) -> None:

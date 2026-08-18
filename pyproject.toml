@@ -76,3 +76,7 @@ packages = ["gemma_qat_bench"]
 mypy_path = "src"
 strict = true
 warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["openai_codex", "openai_codex.*"]
+ignore_missing_imports = true

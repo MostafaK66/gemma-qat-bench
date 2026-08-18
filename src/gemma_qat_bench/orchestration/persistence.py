@@ -135,7 +135,7 @@ class InMemoryWorkflowStore:
 
 
 class JsonFileWorkflowStore:
-    """Write one mode-0600 JSON checkpoint per task using atomic replacement."""
+    """Write mode-0600 JSON checkpoints in a private state directory."""
 
     def __init__(self, directory: Path) -> None:
         self._directory = directory
@@ -144,7 +144,8 @@ class JsonFileWorkflowStore:
         return self._directory / f"{task_id}.json"
 
     def save(self, snapshot: WorkflowSnapshot) -> None:
-        self._directory.mkdir(parents=True, exist_ok=True)
+        self._directory.mkdir(parents=True, exist_ok=True, mode=0o700)
+        self._directory.chmod(0o700)
         payload = asdict(snapshot)
         payload["task_id"] = str(snapshot.task_id)
         payload["state"] = snapshot.state.value
@@ -259,7 +260,13 @@ class JsonFileWorkflowStore:
                 event_count=int(data["event_count"]),
                 task_spec=task_spec,
             )
-        except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        except (
+            AttributeError,
+            KeyError,
+            TypeError,
+            ValueError,
+            json.JSONDecodeError,
+        ) as exc:
             raise DomainError(f"invalid workflow snapshot {path}: {exc}") from exc
 
 

@@ -33,9 +33,9 @@ V3 does not modify prior V2/V2.5 evaluation outputs or resume model bake-off wor
 | Gate 1 | Plan Critic owns `APPROVED` or `CHANGES_REQUESTED` | typed `PLAN_CRITIQUE` artifact plus engine |
 | Gate 2 | Verifier owns semantic `PASSED` or `FAILED`; malformed output is not a verdict | strict artifact validation plus engine |
 | Gate 3 | FULL Reviewer owns `APPROVED` or `CHANGES_REQUESTED`; FAST records no Gate 3 | strict `REVIEW` artifact plus engine |
-| Verification | Only the command broker owns authoritative execution state | `commands.CommandBroker` and `evidence.EvidenceLedger` |
+| Verification | Only the command broker owns authoritative execution state, and every task has at least one required command | `TaskSpec`, `commands.CommandBroker`, and `evidence.EvidenceLedger` |
 | Evidence | One fingerprint-bound ledger exists per attempt | `EvidenceBinding` and `EvidenceLedger` |
-| Freshness | Drift invalidates evidence before Verifier, schema repair, or Reviewer | `FingerprintService` and engine checkpoints |
+| Freshness | Drift blocks command execution and invalidates evidence before Verifier, schema repair, or Reviewer | `FingerprintService` and engine checkpoints |
 | Schema repair | One no-product-change Verifier repair; second malformed response escalates | `verifier_schema_repair` budget |
 | Revisions | At most two plan revisions and two shared implementation revisions | typed `RevisionBudget` values |
 | Failure | Provider transport, malformed artifact, product failure, and environment failure remain distinct | `FailureKind` and machine-readable escalation |
@@ -54,10 +54,15 @@ engine. The engine never parses or interprets raw natural-language intake.
 | Verifier returned prose or malformed structure repeatedly | Exactly one JSON root is parsed; one bounded Verifier schema repair; second malformed escalates | `tests/v3/test_artifacts.py`, `test_engine.py` |
 | JetBrains combined wrapper obscured the raw payload boundary | Provider adapter returns one explicit `raw_response`; wrapper stripping is forbidden | `specialists.py`, `codex_adapter.py` |
 | Command evidence could become stale after file changes | Content fingerprint is checked before Gate 2, repair, and Gate 3; stale ledger is invalidated | fingerprint drift engine tests |
+| An empty/all-optional command set could pass with no evidence or authorization | `TaskSpec` rejects tasks without at least one required verification command | domain and CLI task-validation tests |
+| Authorization resume could execute commands after implementation drift | Fingerprint currency is checked before the broker runs; stale-bound evidence is discarded | resume-drift engine test |
+| Binary command output or unavailable/undecodable Git tooling escaped normalization | Command output uses replacement decoding; Git failures become `DomainError` and route fail-closed | command-runner and fingerprint/scope tests |
 | Incomplete implementation was followed by a failed required check | A failed required command deterministically re-enters IMPLEMENTATION and consumes the shared budget | command-revision engine test |
 | A malformed repair could be interpreted as a result | Repair output is validated through the same strict parser and fails closed | double-malformed engine test |
 | Model prose could omit an unexpected changed file | Git task-start identities produce an actual delta that is folded into fingerprint scope before a scope violation is raised | scope tests |
-| Canonical command fields leaked into a specialist verdict | Recursive prohibited-field validation rejects competing ledger reconstruction | artifact tests |
+| Canonical command fields leaked into a specialist verdict | Iterative prohibited-field validation rejects competing ledger reconstruction | artifact tests |
+| Pathological artifact nesting or invalid domain values escaped/mislabelled validation | Nesting becomes `OUTSIDE_ARTIFACT_TEXT`; domain invariants become `INVALID_FIELD_TYPE`; prohibited-key scanning is iterative | artifact-boundary tests |
+| Corrupted checkpoint mappings or permissive state directories weakened persistence | Wrong-shaped snapshots become `DomainError`; directories are mode 0700 and files remain 0600 | persistence tests |
 
 ## Migration clarifications
 

@@ -1,13 +1,18 @@
 from __future__ import annotations
 
 import json
+import sys
 from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
 from gemma_qat_bench.orchestration.authorization import StaticAuthorization
-from gemma_qat_bench.orchestration.commands import CommandBroker, RunnerResult
+from gemma_qat_bench.orchestration.commands import (
+    CommandBroker,
+    RunnerResult,
+    SubprocessCommandRunner,
+)
 from gemma_qat_bench.orchestration.domain import (
     AuthorizationStatus,
     CommandId,
@@ -87,6 +92,22 @@ def test_command_output_requires_explicit_excerpt_policy() -> None:
     )
 
 
+def test_subprocess_runner_tolerates_undecodable_command_output(
+    tmp_path: Path,
+) -> None:
+    runner = SubprocessCommandRunner(tmp_path)
+    binary_output = RequiredCommand(
+        CommandId("CMD-BINARY"),
+        (sys.executable, "-c", "import os; os.write(1, b'\\xff\\xfe')"),
+    )
+
+    result = runner.run(binary_output)
+
+    assert result.exit_code == 0
+    assert result.environment_error is None
+    assert "\ufffd" in result.stdout
+
+
 def snapshot() -> WorkflowSnapshot:
     return WorkflowSnapshot(
         1,
@@ -133,11 +154,32 @@ def test_json_store_round_trip_and_mode(tmp_path: Path) -> None:
     assert (tmp_path / "T-1.json").stat().st_mode & 0o777 == 0o600
 
 
+def test_json_store_creates_a_private_state_directory(tmp_path: Path) -> None:
+    state_dir = tmp_path / "state"
+
+    JsonFileWorkflowStore(state_dir).save(snapshot())
+
+    assert state_dir.stat().st_mode & 0o777 == 0o700
+
+
 def test_json_store_rejects_corruption(tmp_path: Path) -> None:
     path = tmp_path / "T-1.json"
     path.write_text("{}", encoding="utf-8")
     with pytest.raises(DomainError, match="invalid workflow snapshot"):
         JsonFileWorkflowStore(tmp_path).load(TaskId("T-1"))
+
+
+def test_json_store_rejects_wrong_shaped_snapshot_values(tmp_path: Path) -> None:
+    state_dir = tmp_path / "state"
+    store = JsonFileWorkflowStore(state_dir)
+    store.save(snapshot())
+    path = state_dir / "T-1.json"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["budgets"] = []
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(DomainError, match="invalid workflow snapshot"):
+        store.load(TaskId("T-1"))
 
 
 def resumable_task_spec(tmp_path: Path) -> TaskSpec:

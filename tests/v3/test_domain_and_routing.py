@@ -62,6 +62,51 @@ def test_task_and_path_invariants(tmp_path: Path) -> None:
         )
 
 
+@pytest.mark.parametrize(
+    "commands",
+    [
+        (),
+        (
+            RequiredCommand(
+                CommandId("CMD-OPTIONAL"),
+                ("pytest", "-q"),
+                required=False,
+            ),
+        ),
+    ],
+)
+def test_task_requires_at_least_one_required_verification_command(
+    tmp_path: Path,
+    commands: tuple[RequiredCommand, ...],
+) -> None:
+    with pytest.raises(DomainError, match="at least one required verification command"):
+        TaskSpec(
+            TaskId("T"),
+            "work",
+            ("done",),
+            RiskLevel.STANDARD,
+            False,
+            tmp_path.resolve(),
+            commands,
+            ("a.py",),
+        )
+
+
+def test_task_fingerprint_scope_is_stored_in_canonical_form(tmp_path: Path) -> None:
+    spec = TaskSpec(
+        TaskId("T"),
+        "work",
+        ("done",),
+        RiskLevel.STANDARD,
+        False,
+        tmp_path.resolve(),
+        (RequiredCommand(CommandId("CMD"), ("pytest", "-q")),),
+        ("./product.py", r"tests\test_product.py"),
+    )
+
+    assert spec.fingerprint_scope == ("product.py", "tests/test_product.py")
+
+
 def test_revision_budget_is_bounded_and_immutable() -> None:
     first = RevisionBudget("repair", 1)
     consumed = first.consume()
@@ -102,6 +147,16 @@ def test_state_machine_accepts_only_explicit_transitions() -> None:
     assert WorkflowState.COMMAND_VERIFICATION in allowed_transitions(machine.state)
     with pytest.raises(InvalidTransition):
         machine.transition(WorkflowState.COMPLETE)
+
+
+def test_waiting_authorization_has_single_legal_entry_point() -> None:
+    inbound_states = {
+        state
+        for state in WorkflowState
+        if WorkflowState.WAITING_AUTHORIZATION in allowed_transitions(state)
+    }
+
+    assert inbound_states == {WorkflowState.COMMAND_VERIFICATION}
 
 
 def test_fast_escalation_is_explicit_and_guarded() -> None:

@@ -334,6 +334,8 @@ class TaskSpec:
     def __post_init__(self) -> None:
         if not self.description.strip() or not self.acceptance_criteria:
             raise DomainError("task description and acceptance criteria are required")
+        if not any(command.required for command in self.required_commands):
+            raise DomainError("task requires at least one required verification command")
         ids = [str(command.command_id) for command in self.required_commands]
         if len(ids) != len(set(ids)):
             raise DomainError("required command IDs must be unique")
@@ -342,6 +344,7 @@ class TaskSpec:
         )
         if len(normalized) != len(set(normalized)):
             raise DomainError("fingerprint scope paths must be unique")
+        object.__setattr__(self, "fingerprint_scope", normalized)
         if not self.repository_root.is_absolute():
             raise DomainError("repository root must be absolute")
 

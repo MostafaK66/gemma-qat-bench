@@ -141,7 +141,8 @@ task IDs, command IDs, risk enums, FAST/FULL decisions, or authorization.
 
 Provider structured output is only an outer guard. Local parsing rejects prose wrappers,
 multiple roots, duplicate fields, missing fields, unknown fields, and incorrect types
-before compilation.
+before compilation. Excessive JSON nesting is reported as an artifact defect rather
+than escaping the boundary as a runtime recursion failure.
 
 ## Deterministic compilation and routing
 
@@ -201,8 +202,12 @@ The compiler:
 - marks every generated command required; and
 - uses `STATUS_ONLY` output handling.
 
+Every compiled or explicit `TaskSpec` must contain at least one command with
+`required=true`; the CLI rejects commandless and all-optional task files with exit 1.
 These checks do not replace human authorization. Exact argv arrays are never passed
-through `shell=True`, and only the broker records canonical results.
+through `shell=True`, and only the broker records canonical results. Command output is
+decoded as UTF-8 with replacement for undecodable bytes so binary output becomes
+bounded evidence instead of crashing a resumable workflow.
 
 The ledger binds task ID, plan/intake reference, implementation and verification
 iterations, command-set source, and implementation fingerprint. Verifier views contain
@@ -218,7 +223,8 @@ trailing LF:
 <state>\t<normalized_repository_relative_path>\t<content_identity>
 ```
 
-Paths use `/`, are repository-relative, unique, and sorted. Present identities come
+Paths are stored in canonical `/` form, are repository-relative, unique, and sorted.
+Present identities come
 from `git hash-object --no-filters -- <path>`; deleted paths use `DELETED`. The
 captured scope is the union of compiled/explicit scope and every final path whose
 identity differs from the task-start workspace.
@@ -226,16 +232,20 @@ identity differs from the task-start workspace.
 An actual delta outside authorized scope is included in the fingerprint and then raises
 `SCOPE_VIOLATION`; it is never silently omitted or authorized. If legitimate work
 requires another file, stop and re-run intake with the expanded semantic requirement or
-use a reviewed explicit task specification. Scope/content drift before Verifier, schema
-repair, or Reviewer invalidates evidence and fails closed.
+use a reviewed explicit task specification. Fingerprint currency is checked immediately
+before command execution, including an authorized resume from
+`WAITING_AUTHORIZATION`; changed content is never executed under stale evidence.
+Scope/content drift before Verifier, schema repair, or Reviewer also invalidates
+evidence and fails closed. Missing Git tooling, launch failures, and undecodable Git
+path output are normalized into deterministic environment/tooling failures.
 
 ## Persistence, inspect, and task-ID resume
 
 The default checkpoint is
 `$XDG_STATE_HOME/gemma-qat-bench/v3/<task-id>.json`, or
 `~/.local/state/gemma-qat-bench/v3/<task-id>.json` when XDG state is unset. Files are
-written atomically with mode 0600. `--state-dir` overrides this; use a location the
-workspace-writing Implementer cannot modify.
+written atomically with mode 0600 inside a mode-0700 state directory. `--state-dir`
+overrides this; use a location the workspace-writing Implementer cannot modify.
 
 Checkpoint schema v2 stores the complete validated `TaskSpec`, parsed specialist
 artifacts, budgets, permitted command evidence, Gates, scope baseline, fingerprint,

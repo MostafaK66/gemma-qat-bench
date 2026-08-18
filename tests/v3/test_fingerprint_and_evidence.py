@@ -13,7 +13,10 @@ from gemma_qat_bench.orchestration.domain import (
     TaskId,
 )
 from gemma_qat_bench.orchestration.evidence import EvidenceBinding, EvidenceLedger
-from gemma_qat_bench.orchestration.fingerprint import FingerprintService
+from gemma_qat_bench.orchestration.fingerprint import (
+    FingerprintService,
+    GitContentIdentityProvider,
+)
 from gemma_qat_bench.orchestration.scope import GitWorkspaceChangeDetector, changed_since
 
 
@@ -103,6 +106,43 @@ def test_git_scope_detector_covers_tracked_deleted_untracked_and_reedited(
     assert set(current) == {"a.txt", "b.txt", "c.txt"}
     assert current["b.txt"] == "DELETED"
     assert changed_since(baseline, current) == ("a.txt", "b.txt", "c.txt")
+
+
+def test_unlaunchable_git_binary_fails_closed_as_domain_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tmp_path / "a.txt").write_text("content", encoding="utf-8")
+
+    def unavailable(
+        *args: object, **kwargs: object
+    ) -> subprocess.CompletedProcess[bytes]:
+        raise FileNotFoundError("git is unavailable")
+
+    monkeypatch.setattr(subprocess, "run", unavailable)
+
+    with pytest.raises(DomainError, match="Git workspace inspection"):
+        GitWorkspaceChangeDetector(tmp_path).capture()
+    with pytest.raises(DomainError, match="git hash-object"):
+        GitContentIdentityProvider(tmp_path).identity("a.txt")
+
+
+def test_non_utf8_git_output_fails_closed_as_domain_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tmp_path / "a.txt").write_text("content", encoding="utf-8")
+
+    def undecodable(
+        *args: object, **kwargs: object
+    ) -> subprocess.CompletedProcess[bytes]:
+        argv = args[0] if args else ()
+        return subprocess.CompletedProcess(argv, 0, stdout=b"\xff\x00", stderr=b"")
+
+    monkeypatch.setattr(subprocess, "run", undecodable)
+
+    with pytest.raises(DomainError, match="UTF-8"):
+        GitWorkspaceChangeDetector(tmp_path).capture()
+    with pytest.raises(DomainError, match="UTF-8"):
+        GitContentIdentityProvider(tmp_path).identity("a.txt")
 
 
 def test_evidence_ledger_rejects_competing_or_stale_records() -> None:

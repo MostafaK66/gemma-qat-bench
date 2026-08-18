@@ -52,6 +52,8 @@ class SubprocessCommandRunner:
                 check=False,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 timeout=self._timeout,
             )
         except (OSError, subprocess.SubprocessError) as exc:

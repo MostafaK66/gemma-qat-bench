@@ -24,18 +24,27 @@ class GitContentIdentityProvider:
         path = (self._root / relative_path).resolve()
         if not path.is_relative_to(self._root) or not path.is_file():
             raise DomainError(f"cannot fingerprint non-file path: {relative_path}")
-        completed = subprocess.run(
-            ("git", "hash-object", "--no-filters", "--", relative_path),
-            cwd=self._root,
-            check=False,
-            capture_output=True,
-            text=True,
-        )
-        identity = completed.stdout.strip()
-        if completed.returncode != 0 or not identity:
-            raise DomainError(
-                f"git hash-object failed for {relative_path}: {completed.stderr.strip()}"
+        try:
+            completed = subprocess.run(
+                ("git", "hash-object", "--no-filters", "--", relative_path),
+                cwd=self._root,
+                check=False,
+                capture_output=True,
             )
+        except (OSError, subprocess.SubprocessError) as exc:
+            raise DomainError(
+                f"git hash-object could not launch for {relative_path}: "
+                f"{type(exc).__name__}: {exc}"
+            ) from exc
+        try:
+            identity = completed.stdout.decode("utf-8").strip()
+        except UnicodeDecodeError as exc:
+            raise DomainError(
+                f"git hash-object returned non-UTF-8 output for {relative_path}"
+            ) from exc
+        if completed.returncode != 0 or not identity:
+            message = completed.stderr.decode("utf-8", errors="replace").strip()
+            raise DomainError(f"git hash-object failed for {relative_path}: {message}")
         return identity
 
 

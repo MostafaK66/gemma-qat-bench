@@ -46,7 +46,7 @@ class _CodexStructuredInvoker:
         may_write_workspace: bool,
     ) -> _StructuredInvocationResult:
         try:
-            from openai_codex import (  # type: ignore[import-not-found]
+            from openai_codex import (
                 ApprovalMode,
                 Codex,
                 Sandbox,

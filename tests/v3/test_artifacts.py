@@ -83,6 +83,26 @@ def test_invalid_enum_is_rejected() -> None:
     )
 
 
+def test_pathological_nesting_is_a_defect_not_a_crash() -> None:
+    raw = "[" * 100_000 + "0" + "]" * 100_000
+
+    result = validate_artifact(ArtifactKind.VERIFICATION, raw)
+
+    assert not result.valid
+    assert result.defects[0].code == DefectCode.OUTSIDE_ARTIFACT_TEXT.value
+
+
+def test_domain_invariant_violation_is_a_field_defect_not_an_enum_defect() -> None:
+    result = validate_artifact(
+        ArtifactKind.VERIFICATION,
+        json.dumps(verification(task_id="has whitespace")),
+        expected_command_ids=("CMD-001",),
+    )
+
+    assert not result.valid
+    assert result.defects[0].code == DefectCode.INVALID_FIELD_TYPE.value
+
+
 def test_assessment_fields_must_be_exact() -> None:
     value = verification()
     value["command_assessments"][0]["exit_code"] = 0

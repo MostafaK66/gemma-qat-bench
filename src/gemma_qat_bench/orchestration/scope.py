@@ -43,20 +43,32 @@ class GitWorkspaceChangeDetector:
         return result
 
     def _git_paths(self, argv: tuple[str, ...]) -> set[str]:
-        completed = subprocess.run(
-            argv,
-            cwd=self._root,
-            check=False,
-            capture_output=True,
-        )
+        try:
+            completed = subprocess.run(
+                argv,
+                cwd=self._root,
+                check=False,
+                capture_output=True,
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
+            raise DomainError(
+                f"Git workspace inspection could not launch: {type(exc).__name__}: {exc}"
+            ) from exc
         if completed.returncode != 0:
             message = completed.stderr.decode("utf-8", errors="replace").strip()
             raise DomainError(f"Git workspace inspection failed: {message}")
-        return {
-            normalize_repository_path(raw.decode("utf-8"))
-            for raw in completed.stdout.split(b"\0")
-            if raw
-        }
+        paths: set[str] = set()
+        for raw in completed.stdout.split(b"\0"):
+            if not raw:
+                continue
+            try:
+                decoded = raw.decode("utf-8")
+            except UnicodeDecodeError as exc:
+                raise DomainError(
+                    "Git workspace inspection returned a non-UTF-8 path"
+                ) from exc
+            paths.add(normalize_repository_path(decoded))
+        return paths
 
 
 def changed_since(baseline: ScopeBaseline, current: ScopeBaseline) -> tuple[str, ...]:
