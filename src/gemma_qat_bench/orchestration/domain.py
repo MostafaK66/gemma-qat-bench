@@ -337,6 +337,11 @@ class TaskSpec:
         )
         if len(normalized) != len(set(normalized)):
             raise DomainError("fingerprint scope paths must be unique")
+        # Store the canonical spellings: every scope consumer (fingerprint
+        # capture, delta comparison, declared-file checks) compares these
+        # strings against git-normalized paths, so a validated-but-raw form
+        # such as "./product.py" would register as permanent fingerprint drift.
+        object.__setattr__(self, "fingerprint_scope", normalized)
         if not self.repository_root.is_absolute():
             raise DomainError("repository root must be absolute")
 

@@ -98,6 +98,23 @@ def test_task_requires_at_least_one_required_verification_command(
     assert any(command.required for command in optional_plus_required.required_commands)
 
 
+def test_task_fingerprint_scope_is_stored_in_canonical_form(tmp_path: Path) -> None:
+    """Regression: a validated-but-raw spelling such as "./product.py" was kept
+    verbatim, never matched the git-normalized delta paths, and made every run
+    escalate with fingerprint drift after the commands had already executed."""
+    spec = TaskSpec(
+        TaskId("T-NORM"),
+        "change one exact value",
+        ("focused check passes",),
+        RiskLevel.TRIVIAL_MECHANICAL,
+        True,
+        tmp_path.resolve(),
+        (RequiredCommand(CommandId("CMD-001"), ("pytest", "-q")),),
+        ("./product.py", "src\\nested\\module.py"),
+    )
+    assert spec.fingerprint_scope == ("product.py", "src/nested/module.py")
+
+
 def test_revision_budget_is_bounded_and_immutable() -> None:
     first = RevisionBudget("repair", 1)
     consumed = first.consume()
