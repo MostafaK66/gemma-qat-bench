@@ -43,20 +43,30 @@ class GitWorkspaceChangeDetector:
         return result
 
     def _git_paths(self, argv: tuple[str, ...]) -> set[str]:
-        completed = subprocess.run(
-            argv,
-            cwd=self._root,
-            check=False,
-            capture_output=True,
-        )
+        try:
+            completed = subprocess.run(
+                argv,
+                cwd=self._root,
+                check=False,
+                capture_output=True,
+            )
+        except OSError as exc:
+            # A missing or unlaunchable git binary must surface as the
+            # environment failure the engine escalates on, not a raw traceback.
+            raise DomainError(f"Git workspace inspection failed: {exc}") from exc
         if completed.returncode != 0:
             message = completed.stderr.decode("utf-8", errors="replace").strip()
             raise DomainError(f"Git workspace inspection failed: {message}")
-        return {
-            normalize_repository_path(raw.decode("utf-8"))
-            for raw in completed.stdout.split(b"\0")
-            if raw
-        }
+        try:
+            return {
+                normalize_repository_path(raw.decode("utf-8"))
+                for raw in completed.stdout.split(b"\0")
+                if raw
+            }
+        except UnicodeDecodeError as exc:
+            raise DomainError(
+                f"Git reported a path that is not valid UTF-8: {exc}"
+            ) from exc
 
 
 def changed_since(baseline: ScopeBaseline, current: ScopeBaseline) -> tuple[str, ...]:

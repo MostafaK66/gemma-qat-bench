@@ -24,13 +24,22 @@ class GitContentIdentityProvider:
         path = (self._root / relative_path).resolve()
         if not path.is_relative_to(self._root) or not path.is_file():
             raise DomainError(f"cannot fingerprint non-file path: {relative_path}")
-        completed = subprocess.run(
-            ("git", "hash-object", "--no-filters", "--", relative_path),
-            cwd=self._root,
-            check=False,
-            capture_output=True,
-            text=True,
-        )
+        try:
+            completed = subprocess.run(
+                ("git", "hash-object", "--no-filters", "--", relative_path),
+                cwd=self._root,
+                check=False,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
+        except OSError as exc:
+            # A missing or unlaunchable git binary must surface as the
+            # environment failure the engine escalates on, not a raw traceback.
+            raise DomainError(
+                f"git hash-object failed for {relative_path}: {exc}"
+            ) from exc
         identity = completed.stdout.strip()
         if completed.returncode != 0 or not identity:
             raise DomainError(

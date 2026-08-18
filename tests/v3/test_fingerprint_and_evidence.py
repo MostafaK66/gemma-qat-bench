@@ -13,7 +13,10 @@ from gemma_qat_bench.orchestration.domain import (
     TaskId,
 )
 from gemma_qat_bench.orchestration.evidence import EvidenceBinding, EvidenceLedger
-from gemma_qat_bench.orchestration.fingerprint import FingerprintService
+from gemma_qat_bench.orchestration.fingerprint import (
+    FingerprintService,
+    GitContentIdentityProvider,
+)
 from gemma_qat_bench.orchestration.scope import GitWorkspaceChangeDetector, changed_since
 
 
@@ -103,6 +106,19 @@ def test_git_scope_detector_covers_tracked_deleted_untracked_and_reedited(
     assert set(current) == {"a.txt", "b.txt", "c.txt"}
     assert current["b.txt"] == "DELETED"
     assert changed_since(baseline, current) == ("a.txt", "b.txt", "c.txt")
+
+
+def test_unlaunchable_git_binary_fails_closed_as_domain_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Regression: a missing git binary escaped as FileNotFoundError, bypassing
+    the engine's ENVIRONMENT_TOOLING_FAILURE escalation path."""
+    (tmp_path / "f.txt").write_text("x", encoding="utf-8")
+    monkeypatch.setenv("PATH", str(tmp_path / "no-binaries-here"))
+    with pytest.raises(DomainError, match="Git workspace inspection failed"):
+        GitWorkspaceChangeDetector(tmp_path).capture()
+    with pytest.raises(DomainError, match="git hash-object failed"):
+        GitContentIdentityProvider(tmp_path).identity("f.txt")
 
 
 def test_evidence_ledger_rejects_competing_or_stale_records() -> None:
