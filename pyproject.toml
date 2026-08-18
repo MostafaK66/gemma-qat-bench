@@ -32,9 +32,13 @@ dev = [
     "mypy>=1.9",
     "types-requests>=2.31",
 ]
+v3-codex = [
+    "openai-codex>=0.147,<1",
+]
 
 [project.scripts]
 gemma-qat-bench = "gemma_qat_bench.cli:main"
+gemma-qat-orchestrate = "gemma_qat_bench.orchestration.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/MostafaK66/gemma-qat-bench"
@@ -48,6 +52,9 @@ packages = ["src/gemma_qat_bench"]
 pythonpath = ["src", "tests"]
 testpaths = ["tests"]
 addopts = "-ra"
+markers = [
+    "v3_live: optional live Codex SDK integration test (requires explicit opt-in)",
+]
 
 
 [tool.ruff]

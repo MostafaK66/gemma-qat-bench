@@ -16,6 +16,8 @@ Primary concerns:
 - aggregate repeated runs
 - compare QAT against a non-QAT baseline
 - render console, Markdown, and JSON reports
+- run deterministic FAST/FULL coding orchestration with typed Gates, brokered commands,
+  canonical evidence, fingerprints, and an optional Codex SDK adapter
 
 The project measures runtime performance and memory usage; it is not an accuracy or
 model-quality benchmark.
@@ -34,6 +36,8 @@ model-quality benchmark.
 - `.context/handoff-TEMPLATE.md` — tracked task-scoped orchestration handoff/state/artifact template
 - `.context/world-state-TEMPLATE.md` — template for optional gitignored working state
 - `.context/README.md` — how to use local world state and reusable task prompts
+- `docs/v3-orchestration.md` — executable V3 architecture, CLI, safety, and operations
+- `docs/v3-requirements.md` — frozen V2 inputs and V3 migration traceability
 
 The roles are intentionally different:
 
@@ -66,12 +70,19 @@ gemma-qat-bench/
 │       ├── metrics.py        per-run + aggregate metrics
 │       ├── benchmark.py      end-to-end benchmark orchestration
 │       ├── report.py         comparison + console/Markdown/JSON rendering
-│       └── cli.py            argparse commands and config overrides
+│       ├── cli.py            benchmark argparse commands and config overrides
+│       └── orchestration/    deterministic V3 domain, engine, adapters, and CLI
 ├── tests/
 │   ├── conftest.py           shared fakes/fixtures
-│   └── test_*.py             offline unit tests mirroring source responsibilities
+│   ├── test_*.py             offline benchmark/framework tests
+│   └── v3/                   deterministic V3 unit and end-to-end tests
 ├── configs/
-│   └── tutorial.toml         default Gemma 4 12B QAT/non-QAT benchmark
+│   ├── tutorial.toml         default Gemma 4 12B QAT/non-QAT benchmark
+│   └── v3-task.example.json  V3 task/command/fingerprint example
+├── docs/
+│   ├── v3-orchestration.md   V3 operating and architecture guide
+│   ├── v3-requirements.md    V2-to-V3 freeze and regression map
+│   └── adr/                  architecture decisions
 ├── scripts/                  reference shell helpers
 ├── .run/                     shared PyCharm run configurations
 ├── .github/

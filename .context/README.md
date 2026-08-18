@@ -110,3 +110,8 @@ V1/V1.5 remains a planning-only route that may stop at `PLAN_APPROVED`. V2.1 def
 FAST/FULL coding contract, and V2.2 activates production Implementer, Verifier, and Reviewer
 profiles/prompts under that contract. Task handoffs are Orchestrator-owned observability artifacts,
 not authoritative state stores; `CHANGE_COMPLETE` does not authorize Git mutation.
+
+V3 is the executable successor under `src/gemma_qat_bench/orchestration/`. It preserves
+the relevant V2 semantics in deterministic code, uses durable checkpoints rather than
+handoff prose as authoritative state, and is documented in `docs/v3-orchestration.md`.
+The V1/V2 prompts remain tracked migration and manual-workflow references.

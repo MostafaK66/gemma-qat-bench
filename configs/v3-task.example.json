@@ -1,0 +1,25 @@
+{
+    "task_id": "EXAMPLE-001",
+    "description": "Make the requested repository change and verify it.",
+    "acceptance_criteria": [
+        "The requested behavior is implemented.",
+        "The focused test and repository quality checks pass."
+    ],
+    "risk": "STANDARD",
+    "fast_eligible": false,
+    "repository_root": "/absolute/path/to/gemma-qat-bench",
+    "required_commands": [
+        {
+            "command_id": "CMD-001",
+            "argv": ["python", "-m", "pytest", "-q", "tests/v3"],
+            "cwd": ".",
+            "required": true,
+            "rationale": "V3 focused acceptance suite",
+            "output_handling": "STATUS_ONLY"
+        }
+    ],
+    "fingerprint_scope": [
+        "src/gemma_qat_bench/orchestration/engine.py",
+        "tests/v3/test_engine.py"
+    ]
+}

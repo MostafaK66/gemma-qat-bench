@@ -1,6 +1,6 @@
 # AGENTS.md — Engineering Contract for AI Coding Agents
 
-**Last updated:** 2026-08-11 · **Applies to:** `gemma-qat-bench` · **Python:** see `pyproject.toml`
+**Last updated:** 2026-08-18 · **Applies to:** `gemma-qat-bench` · **Python:** see `pyproject.toml`
 
 > **Note:** Domain module names and filenames in §4 and throughout are illustrative.
 > Preserve the separation of concerns, not the exact filenames.
@@ -53,7 +53,9 @@ This applies to companion files such as skills, prompts, `llms.txt`,
 ## 2. Project identity
 
 `gemma-qat-bench` is a Python package and CLI for reproducible QAT-vs-non-QAT GGUF
-benchmarking with `llama.cpp`.
+benchmarking with `llama.cpp`. It also contains a separate V3 deterministic coding
+orchestration subsystem under `gemma_qat_bench.orchestration`; that subsystem does not
+change benchmark execution behavior.
 
 Current high-level flow:
 
@@ -683,4 +685,3 @@ Keep it concise; it is a human-readable bridge between coding sessions, not a du
 chat history.
 
 Never put secrets or sensitive credentials in world state.
-
