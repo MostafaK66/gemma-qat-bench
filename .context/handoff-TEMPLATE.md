@@ -197,11 +197,27 @@ Residual risks:
 
 ## Brokered execution evidence
 
-The Orchestrator may broker only exact repository-prescribed commands through its observable JetBrains approval boundary. Preserve raw evidence; never reinterpret failures or claim unexecuted commands passed.
+The Orchestrator may broker only exact repository-prescribed commands through its observable JetBrains approval boundary. Preserve canonical evidence and never reinterpret failures or claim unexecuted commands passed.
 
-| Command | Working directory | Exit/result | Relevant unmodified stdout/stderr or raw-evidence reference | Required? |
-| --- | --- | --- | --- | --- |
-|  |  |  |  |  |
+This ledger is Orchestrator-owned, task-scoped local/gitignored observability/persistence for the current verification attempt. It is not a machine-authoritative V2 state store. Canonical labels are exactly `required_command_set_source`, `exact_executed_command`, `execution_result`, `output_handling`, and `permitted_evidence_material`.
+
+### Verification attempt binding
+
+```text
+task_id:
+plan_version_or_fast_intake_reference:
+implementation_iteration:
+verification_iteration:
+required_command_set_source:
+```
+
+### Canonical command ledger records
+
+| command_id | exact_executed_command (char-for-char) | working_directory | execution_result | exit_code | required | output_handling | permitted_evidence_material | required_command_rationale_or_source |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| CMD-001 |  |  |  |  |  |  |  |  |
+
+Sensitive policy: no full stdout/stderr by default; persist only minimal exact character-preserving non-sensitive excerpts or supplied protected references. Suspected-sensitive output must use `output_handling: WITHHELD_SENSITIVE` with a non-sensitive reason and must not persist sensitive content. All V2 sensitive-output requirements in `.context/AGENT-ROLES.md` apply, including: no free-form LLM redaction presented as unmodified evidence; opaque references only when actually supplied (no invention); commands embedding secrets require a safe equivalent or human resolution; withholding alone is not a verdict, but insufficient remaining permitted evidence cannot support `PASSED`.
 
 ## Gate 2 history — verification
 
@@ -212,16 +228,25 @@ Gate 2 verdicts are exactly `PASSED` or `FAILED`. Verifier owns the judgment, no
 ```text
 VERIFICATION
 
+Task ID:
+
 Plan/intake version:
 
 Implementation iteration:
+
+Verification iteration:
 
 Verdict:
 PASSED | FAILED
 
 Acceptance criteria checked:
 
-Brokered commands/evidence reviewed:
+Required command evidence assessments:
+- command_id:
+  evidence_quality:
+    sufficient | insufficient
+  evidence_assessment:
+  rationale:
 
 Findings (finding_kind + resolution_class):
 
@@ -229,6 +254,8 @@ Environment limitations:
 
 Residual risks:
 ```
+
+Verifier artifact constraint: include every required `command_id` exactly once in `Required command evidence assessments`. Include only `command_id`, `evidence_quality`, `evidence_assessment`, and `rationale`; do not reproduce canonical evidence fields (`required_command_set_source`, `exact_executed_command`, `execution_result`, `output_handling`, `permitted_evidence_material`) or protected references.
 
 | Verification iteration | Gate 2 verdict | Finding kinds / resolution classes | Resulting state |
 | --- | --- | --- | --- |

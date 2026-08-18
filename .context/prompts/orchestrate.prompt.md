@@ -54,7 +54,19 @@ Gate 3 is exactly `APPROVED | CHANGES REQUESTED`; Reviewer independently judges 
 
 ## Verification execution broker
 
-The production Verifier is read/search-only and receives no `run_in_terminal`, `get_terminal_output`, edit tool, Git mutation, or `run_subagent`. Under current JetBrains evidence, the main Orchestrator may broker exact repository-prescribed commands only through its observable human approval boundary. Capture and transfer exact command, working directory, exit/result, and relevant unmodified raw stdout/stderr (or equivalent). Do not omit, reinterpret, fabricate, or silently skip evidence; do not substitute an Orchestrator Gate 2 verdict.
+The production Verifier is read/search-only and receives no `run_in_terminal`, `get_terminal_output`, edit tool, Git mutation, or `run_subagent`. Under current JetBrains evidence, the main Orchestrator may broker exact repository-prescribed commands only through its observable human approval boundary.
+
+Use the canonical V2 evidence labels exactly: `required_command_set_source`, `exact_executed_command`, `execution_result`, `output_handling`, and `permitted_evidence_material`.
+
+Maintain one Orchestrator-owned task-scoped local/gitignored ledger per verification attempt, bound to task ID, plan version/FAST intake reference, implementation iteration, verification iteration, and `required_command_set_source`. Each stable `CMD-001` record includes `command_id`, character-for-character `exact_executed_command`, working directory, `execution_result`, exit code, required flag, `output_handling`, `permitted_evidence_material`, and `required_command_rationale_or_source`. A new implementation iteration requires a new ledger; prior implementation evidence cannot satisfy the new Gate 2 attempt.
+
+Before delegating Verifier, structurally validate ledger completeness and exact current bindings including `required_command_set_source`.
+
+After Verifier returns, validate artifact/reference integrity only: every required `command_id` appears exactly once; no missing/duplicate/unknown/stale IDs; all required assessment fields exist (`command_id`, `evidence_quality`, `evidence_assessment`, `rationale`); and no canonical evidence recreation/overwrite appears. Do not determine evidence sufficiency or Gate 2 verdict.
+
+Allow one schema-only retry only when no product files changed; second malformed artifact escalates. Never infer verdicts, reconstruct evidence, or blindly rerun verification after possibly changed implementation.
+
+Sensitive policy: do not persist full stdout/stderr by default. Persist only minimal exact character-preserving non-sensitive excerpts or supplied protected references. For suspected-sensitive output, never persist raw sensitive content in prompts/artifacts; record `output_handling: WITHHELD_SENSITIVE` plus a non-sensitive reason. Do not use free-form LLM redaction as authoritative raw evidence, and never invent opaque references. If a command embeds secrets, require a safe equivalent or human resolution. Withholding alone is not a Gate 2 verdict, but insufficient remaining permitted evidence cannot support `PASSED`.
 
 V2 preserves independent verification judgment, not fully independent verification execution. Do not claim SDK-enforced least privilege equivalence.
 
@@ -74,7 +86,7 @@ Handle `PROFILE_UNAVAILABLE`, `INVOCATION_FAILED`, `MALFORMED_ARTIFACT`, `AGENT_
 
 ## Context, artifacts, and final output
 
-Minimize specialist context and require the exact IMPLEMENTATION, VERIFICATION, and IMPLEMENTATION REVIEW fields in the authoritative contract/template. Artifacts must be concise, self-contained, evidence-linked, and explicit about unknown/unrun/failed facts.
+Minimize specialist context and require the exact IMPLEMENTATION, VERIFICATION, and IMPLEMENTATION REVIEW fields in the authoritative contract/template. For Verifier, pass task-scoped read-only review context containing relevant current canonical records plus permitted evidence material (not only IDs). Verifier must inspect but neither own nor persist/modify/execute/reconstruct the ledger. Verifier artifacts must not reproduce authoritative `exact_executed_command`, working directories, `execution_result`, raw output, `output_handling`, `permitted_evidence_material`, or protected references.
 
 At `CHANGE_COMPLETE`, persist usage accounting and `FINAL COMMIT-PREPARATION SUMMARY`. It means workflow completion and human handoff readiness only—not staging, committing, pushing, merging, or deploying. Never invoke version-control preparation automatically; it requires later explicit human intent and independent Git inspection.
 

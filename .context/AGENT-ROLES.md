@@ -143,9 +143,29 @@ Verdicts are exactly `PASSED` and `FAILED`; no third verdict. `PASSED` requires 
 
 Gate 2 findings use both `finding_kind` and `resolution_class` without conflation. Allowed finding kinds: `IMPLEMENTATION_DEFECT`, `ACCEPTANCE_EVIDENCE_MISSING`, `QUALITY_GATE_FAILURE`, `ENVIRONMENT_TOOLING_FAILURE`, `PLAN_ASSUMPTION_INVALIDATED`. Resolution classes remain `EVIDENCE_RESOLVABLE` and `HUMAN_INTENT_REQUIRED`. Environment/tooling failure routes to `AWAITING_ENVIRONMENT_RESOLUTION`; it is not product intent.
 
+### Canonical verification evidence ledger (V2)
+
+The Orchestrator owns a task-scoped local/gitignored canonical verification evidence ledger. It is not a machine-authoritative V2 state machine; it is attempt-scoped observability/persistence only. Canonical labels are exactly: `required_command_set_source`, `exact_executed_command`, `execution_result`, `output_handling`, and `permitted_evidence_material`.
+
+- One ledger exists per verification attempt and is bound to: task ID, plan version/FAST intake reference, implementation iteration, verification iteration, and `required_command_set_source`.
+- A new implementation iteration requires a new ledger; no prior implementation evidence may satisfy a new Gate 2 attempt.
+- Each stable `CMD-001`-style record includes: `command_id`; `exact_executed_command` (character-for-character); `working_directory`; `execution_result`; `exit_code`; `required`; `output_handling`; `permitted_evidence_material`; `required_command_rationale_or_source`.
+
 ### Execution broker
 
-The delegated Verifier independently owns Gate 2 judgment but not command execution. The main Orchestrator brokers only exact repository-prescribed quality commands through its observed human approval boundary, captures exact command, working directory, exit/result, and relevant unmodified raw stdout/stderr (or equivalent), and transfers that evidence to Verifier. It must not reinterpret failures, omit evidence, manufacture output, silently skip commands, or substitute its own Gate 2 verdict. V2 preserves independent verification judgment, **not** fully independent verification execution; this accepted JetBrains limitation is not equivalent to future SDK-enforced least privilege.
+The delegated Verifier independently owns Gate 2 judgment but not command execution. The main Orchestrator brokers only exact repository-prescribed quality commands through its observed human approval boundary, captures canonical ledger evidence (`exact_executed_command`, working directory, `execution_result`, exit/result metadata, and permitted material per `output_handling`), and transfers that evidence to Verifier. It must not reinterpret failures, omit evidence, manufacture output, silently skip commands, or substitute its own Gate 2 verdict.
+
+Before Verifier delegation, Orchestrator must structurally validate current-ledger completeness and exact binding integrity (task/plan-or-intake/implementation/verification plus `required_command_set_source`).
+
+After Verifier returns, Orchestrator validates artifact/reference integrity only: every required `command_id` appears exactly once; no missing/duplicate/unknown/stale IDs; all four assessment fields are present (`command_id`, `evidence_quality`, `evidence_assessment`, `rationale`); and no canonical evidence recreation/overwrite appears. Orchestrator does not determine evidence sufficiency or Gate 2 verdict.
+
+Permit one schema-only retry only when no product files changed. A second malformed artifact escalates. Never infer verdicts, reconstruct evidence, or blindly rerun after possibly changed implementation.
+
+### Sensitive output handling
+
+No full stdout/stderr is persisted by default. Persist only minimal exact character-preserving non-sensitive excerpts when needed, or protected references provided by tooling/humans. If output is suspected sensitive, never persist raw sensitive content in framework artifacts/prompts; set `output_handling: WITHHELD_SENSITIVE` with a non-sensitive reason. Do not present free-form LLM redaction as unmodified evidence. Do not invent opaque references. Commands embedding secrets require a safe equivalent or human resolution. Withholding alone is not a verdict, but insufficient remaining permitted evidence cannot support `PASSED`.
+
+V2 boundary: this contract remains prose-only. Do not add typed Python schemas, machine-authoritative state machines, or SDK-enforced authority in V2.
 
 ## Gate 3 — implementation review
 
@@ -164,10 +184,10 @@ Failure taxonomy: `PROFILE_UNAVAILABLE`, `INVOCATION_FAILED`, `MALFORMED_ARTIFAC
 ## Artifact and context requirements
 
 - **IMPLEMENTATION:** plan version/FAST intake reference; iteration; `COMPLETED | HUMAN_INTENT_REQUIRED | BLOCKED`; steps implemented; changed files/purpose; tests; docs/config; commands actually run (passed/failed/not run); deviations; blockers; residual risks.
-- **VERIFICATION:** plan/intake version; implementation iteration; `PASSED | FAILED`; criteria checked; brokered commands/evidence reviewed; findings with both classifications; environment limitations; residual risks. Never call an unexecuted command passed.
+- **VERIFICATION:** task ID; plan/intake version; implementation iteration; verification iteration; `PASSED | FAILED`; criteria checked; **Required command evidence assessments** (every required `command_id` exactly once with only `command_id`, `evidence_quality: sufficient | insufficient`, `evidence_assessment`, `rationale`); findings with both classifications; environment limitations; residual risks. Verifier output must not reproduce/recreate authoritative `exact_executed_command`, working directory, `execution_result`, raw output, `output_handling`, `permitted_evidence_material`, or protected evidence references.
 - **IMPLEMENTATION REVIEW:** plan version; iteration; `APPROVED | CHANGES REQUESTED`; evidence reviewed; blocking findings; scope; correctness/compatibility/tests/docs assessment; residual risks.
 
-Pass only needed context: Implementer gets the plan/FAST intake, human decisions, relevant repository context, and repair findings; Verifier gets plan/intake, actual scope, implementation artifact, current context, acceptance criteria, and raw brokered evidence; Reviewer gets approved plan, actual scope/diff, implementation and verification artifacts, and relevant source/tests/docs. Artifacts are concise, self-contained, evidence-linked, explicit about unknown/unrun/failed evidence, and free of transcript copying.
+Pass only needed context: Implementer gets the plan/FAST intake, human decisions, relevant repository context, and repair findings; Verifier gets plan/intake, actual scope, implementation artifact, current context, acceptance criteria, and task-scoped read-only review context containing relevant current canonical records plus permitted evidence material (not only IDs); Reviewer gets approved plan, actual scope/diff, implementation and verification artifacts, and relevant source/tests/docs. Artifacts are concise, self-contained, evidence-linked, explicit about unknown/unrun/failed evidence, and free of transcript copying.
 
 ## Completion and Git seam
 

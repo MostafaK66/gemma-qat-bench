@@ -61,13 +61,15 @@ Update the handoff `STATE SNAPSHOT` after every transition. It is observability 
 
 ### Context minimization
 
-Do not pass chat transcripts by default. Give Implementer only current plan/FAST intake, human decisions, relevant repository context, and repair findings. Give Verifier plan/intake, actual scope, implementation artifact, criteria, context, and raw brokered evidence. Give Reviewer the approved plan, actual scope/diff, implementation and verification artifacts, and relevant source/tests/docs. Require concise, self-contained, evidence-linked artifacts that identify unknown/unrun/failed evidence.
+Do not pass chat transcripts by default. Give Implementer only current plan/FAST intake, human decisions, relevant repository context, and repair findings. Give Verifier plan/intake, actual scope, implementation artifact, criteria, context, and task-scoped read-only context containing relevant current canonical ledger records plus permitted evidence material (not only IDs; raw stdout/stderr is not passed by default). Give Reviewer the approved plan, actual scope/diff, implementation and verification artifacts, and relevant source/tests/docs. Require concise, self-contained, evidence-linked artifacts that identify unknown/unrun/failed evidence. Detailed canonical-evidence and sensitive-output requirements are defined in `.context/AGENT-ROLES.md`.
 
 ### Gate 2
 
 Verifier owns the exact `PASSED | FAILED` verdict, not the Orchestrator. A pass requires the complete concrete evidence described in `.context/AGENT-ROLES.md`; absent, unsuccessful, incomplete, or unverifiable required command evidence is `FAILED`. Record finding kind separately from `EVIDENCE_RESOLVABLE | HUMAN_INTENT_REQUIRED`; route environment/tooling failures to `AWAITING_ENVIRONMENT_RESOLUTION` rather than treating them as intent.
 
-The Verifier is production read/search-only: no terminal/get-output, edit tools, Git mutation, or delegation. The main Orchestrator may broker only exact repository-prescribed verification commands through its observable JetBrains approval boundary, then forwards command, working directory, exit/result, and relevant unmodified raw stdout/stderr (or equivalent) to Verifier. Never reinterpret output, omit evidence, silently skip a required command, manufacture output, or substitute an Orchestrator verdict. This preserves independent verification **judgment**, not fully independent verification **execution**, an accepted JetBrains V2 limitation.
+The Verifier is production read/search-only: no terminal/get-output, edit tools, Git mutation, or delegation. The main Orchestrator may broker only exact repository-prescribed verification commands through its observable JetBrains approval boundary and maintain the task-scoped canonical ledger using exact labels `required_command_set_source`, `exact_executed_command`, `execution_result`, `output_handling`, and `permitted_evidence_material`. Authoritative ledger binding/field requirements, sensitive-output handling, and pre/post-verifier validation rules live in `.context/AGENT-ROLES.md` and must be followed exactly.
+
+Composition boundary: skill-level guidance remains summary-only. Do not introduce typed Python schemas, machine-authoritative V2 state machines, or SDK-enforced authority here.
 
 ### Gate 3 and repair ordering
 
