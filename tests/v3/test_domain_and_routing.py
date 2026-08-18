@@ -62,6 +62,42 @@ def test_task_and_path_invariants(tmp_path: Path) -> None:
         )
 
 
+def test_task_requires_at_least_one_required_verification_command(
+    tmp_path: Path,
+) -> None:
+    """Regression: a task with no required command reached CHANGE_COMPLETE with an
+    empty evidence ledger and without any observable command authorization."""
+    for commands in (
+        (),
+        (RequiredCommand(CommandId("CMD-OPT"), ("true",), required=False),),
+    ):
+        with pytest.raises(DomainError, match="required verification command"):
+            TaskSpec(
+                TaskId("T-EMPTY"),
+                "change one exact value",
+                ("focused check passes",),
+                RiskLevel.TRIVIAL_MECHANICAL,
+                True,
+                tmp_path.resolve(),
+                commands,
+                ("product.py",),
+            )
+    optional_plus_required = TaskSpec(
+        TaskId("T-MIXED"),
+        "change one exact value",
+        ("focused check passes",),
+        RiskLevel.TRIVIAL_MECHANICAL,
+        True,
+        tmp_path.resolve(),
+        (
+            RequiredCommand(CommandId("CMD-OPT"), ("true",), required=False),
+            RequiredCommand(CommandId("CMD-REQ"), ("pytest", "-q")),
+        ),
+        ("product.py",),
+    )
+    assert any(command.required for command in optional_plus_required.required_commands)
+
+
 def test_revision_budget_is_bounded_and_immutable() -> None:
     first = RevisionBudget("repair", 1)
     consumed = first.consume()

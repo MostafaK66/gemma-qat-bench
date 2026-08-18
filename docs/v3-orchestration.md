@@ -86,7 +86,9 @@ is inconsistent and rejected.
 
 Task files authorize the possible command set, but execution still requires the
 `--authorize-commands` boundary. Commands are argv arrays, never shell strings. Working
-directories must remain inside the repository.
+directories must remain inside the repository. Every task must declare at least one
+`required` command; a task whose command set is empty or entirely optional is rejected
+at validation time so Gate 2 can never pass on an empty evidence ledger.
 
 `output_handling` is `STATUS_ONLY` by default. Use `EXCERPT` only when stdout/stderr is
 permitted evidence; excerpts are bounded. Environment/spawn failures are distinct from

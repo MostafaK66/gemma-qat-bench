@@ -327,6 +327,11 @@ class TaskSpec:
         ids = [str(command.command_id) for command in self.required_commands]
         if len(ids) != len(set(ids)):
             raise DomainError("required command IDs must be unique")
+        if not any(command.required for command in self.required_commands):
+            raise DomainError(
+                "task must declare at least one required verification command; "
+                "Gate 2 cannot pass on an empty evidence ledger"
+            )
         normalized = tuple(
             normalize_repository_path(path) for path in self.fingerprint_scope
         )
