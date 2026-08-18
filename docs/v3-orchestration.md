@@ -117,7 +117,10 @@ untracked files and a pre-existing modified file changed again.
 
 An actual delta outside authorized scope is included in the captured fingerprint and
 then raises `SCOPE_VIOLATION`; it is never silently omitted. Scope or content drift
-before Verifier, schema repair, or Reviewer invalidates evidence and fails closed.
+before command execution, Verifier, schema repair, or Reviewer invalidates evidence and
+fails closed. The pre-command check means a resumed workflow whose content changed while
+it waited for authorization escalates instead of executing commands and recording
+canonical evidence against a stale fingerprint binding.
 
 ## Budgets and failure behavior
 

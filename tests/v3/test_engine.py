@@ -242,6 +242,15 @@ class CrashRunner:
         raise RuntimeError("simulated process interruption")
 
 
+class CountingRunner:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def run(self, command: RequiredCommand) -> RunnerResult:
+        self.calls += 1
+        return RunnerResult(0, "passed")
+
+
 class MutatingClient:
     def __init__(self, delegate: ScriptedSpecialistClient, path: Path) -> None:
         self.delegate = delegate
@@ -622,6 +631,30 @@ def test_required_authorization_pauses_and_authorized_resume_continues(
     assert [event.sequence for event in snapshot.events] == list(
         range(1, snapshot.event_count + 1)
     )
+
+
+def test_resumed_drifted_content_refuses_command_execution(tmp_path: Path) -> None:
+    """Regression: after WAITING_AUTHORIZATION, content drift still executed the
+    commands and recorded canonical evidence bound to the stale fingerprint."""
+    spec = task_spec(tmp_path)
+    store = InMemoryWorkflowStore()
+    client = ScriptedSpecialistClient(fast_success_script())
+    waiting = engine(
+        spec,
+        client,
+        store=store,
+        authorization_status=AuthorizationStatus.REQUIRED,
+    ).run(spec)
+    assert waiting.status is CompletionStatus.WAITING_AUTHORIZATION
+
+    (tmp_path / "product.py").write_text("edited while waiting", encoding="utf-8")
+    runner = CountingRunner()
+    result = engine(spec, client, runner=runner, store=store).resume(spec)
+    assert result.status is CompletionStatus.ESCALATED
+    assert result.escalation is not None
+    assert result.escalation.failure_kind is FailureKind.FINGERPRINT_DRIFT
+    assert result.escalation.code == "FINGERPRINT_DRIFT_BEFORE_COMMANDS"
+    assert runner.calls == 0
 
 
 def test_actual_out_of_scope_change_is_included_then_rejected(tmp_path: Path) -> None:

@@ -453,6 +453,14 @@ class Orchestrator:
                 "verification commands require a bound implementation fingerprint",
             )
             return
+        if not self._fingerprint_is_current(runtime):
+            self._escalate(
+                runtime,
+                FailureKind.FINGERPRINT_DRIFT,
+                "FINGERPRINT_DRIFT_BEFORE_COMMANDS",
+                "implementation content changed before authorized commands could run",
+            )
+            return
         command_ids = tuple(
             str(item.command_id) for item in runtime.spec.required_commands
         )
