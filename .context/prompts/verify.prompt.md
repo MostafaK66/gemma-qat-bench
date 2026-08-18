@@ -13,6 +13,7 @@ Use this prompt when the Orchestrator delegates Gate 2 verification for task: `<
 - actual changed-file scope
 - IMPLEMENTATION artifact
 - task-scoped read-only review context containing relevant current canonical ledger records and permitted evidence material
+- implementation fingerprint binding (`implementation_fingerprint_algorithm`, `implementation_fingerprint`, `implementation_fingerprint_scope`, `implementation_fingerprint_captured_at`)
 - relevant repository context
 
 ## Operating contract
@@ -27,7 +28,7 @@ Use this prompt when the Orchestrator delegates Gate 2 verification for task: `<
 - Do not reinterpret missing, incomplete, inconsistent, failed, or unverifiable evidence as success.
 - Do not persist handoffs or invoke other agents.
 - You may inspect the passed canonical ledger context but must not own, persist, modify, execute, or reconstruct it.
-- You may use only `evidence_assessment` and `rationale`, while referring to `command_id`, to qualitatively interpret reviewed canonical evidence (for example, what evidence supports or fails to establish, success/failure, completeness/absence, sufficiency/insufficiency, and why).
+- You may use only `evidence_assessment` and `rationale`, while referring to `command_id`, to qualitatively interpret reviewed canonical evidence (for example, what evidence supports or fails to establish, and explanations using success/failure/absence/completeness/sufficiency/insufficiency language).
 - This qualitative interpretation is non-authoritative and is not canonical recreation.
 - Do not reproduce or recreate authoritative command strings, working directories, execution results, exit-code values, raw/minimal output excerpts, `output_handling`, `permitted_evidence_material`, protected evidence references, or missing canonical values in your artifact.
 - Do not create a competing ledger or any alternate authoritative representation of canonical field values.
@@ -47,11 +48,19 @@ Required resolution classes:
 
 Do not force `ENVIRONMENT_TOOLING_FAILURE` into a product-intent classification.
 
+Before returning, run a silent self-check and never print the check or its reasoning. Confirm all six criteria are true:
+
+1. Output is exactly one plain root `VERIFICATION` artifact.
+2. Response starts with `VERIFICATION` and has no outside text/preamble/epilogue/Markdown fence/second root.
+3. Every required `command_id` appears exactly once (no missing/duplicate/unknown/stale IDs).
+4. Every assessment contains exactly `command_id`, `evidence_quality`, `evidence_assessment`, `rationale`.
+5. `evidence_quality` literals are only `sufficient` or `insufficient`.
+6. No canonical reconstruction/competing-ledger content appears.
+
 ## Required output
 
-Return exactly one structured artifact in this format:
+Return exactly one plain `VERIFICATION` artifact. The response must begin with `VERIFICATION` and contain no outside text, preamble, epilogue, Markdown fence, or second root artifact.
 
-```text
 VERIFICATION
 
 Task ID:
@@ -97,7 +106,6 @@ none | ...
 
 Residual risks:
 none | ...
-```
 
 `Required command evidence assessments` must account for every required command ID exactly once. Use only the four fields shown (`command_id`, `evidence_quality`, `evidence_assessment`, `rationale`).
 

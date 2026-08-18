@@ -147,19 +147,67 @@ Gate 2 findings use both `finding_kind` and `resolution_class` without conflatio
 
 The Orchestrator owns a task-scoped local/gitignored canonical verification evidence ledger. It is not a machine-authoritative V2 state machine; it is attempt-scoped observability/persistence only. Canonical labels are exactly: `required_command_set_source`, `exact_executed_command`, `execution_result`, `output_handling`, and `permitted_evidence_material`.
 
-- One ledger exists per verification attempt and is bound to: task ID, plan version/FAST intake reference, implementation iteration, verification iteration, and `required_command_set_source`.
+- One ledger exists per verification attempt and is bound to: task ID, plan version/FAST intake reference, implementation iteration, verification iteration, `required_command_set_source`, `implementation_fingerprint_algorithm`, `implementation_fingerprint`, `implementation_fingerprint_scope`, and `implementation_fingerprint_captured_at`.
 - A new implementation iteration requires a new ledger; no prior implementation evidence may satisfy a new Gate 2 attempt.
 - Each stable `CMD-001`-style record includes: `command_id`; `exact_executed_command` (character-for-character); `working_directory`; `execution_result`; `exit_code`; `required`; `output_handling`; `permitted_evidence_material`; `required_command_rationale_or_source`.
+
+### Implementation fingerprint binding (implementation-fingerprint-v1)
+
+The canonical verification attempt binding includes an implementation identity fingerprint named `implementation-fingerprint-v1`.
+
+- Algorithm identity: `implementation-fingerprint-v1`.
+- Digest: SHA-256 outer hash over canonical manifest records encoded as UTF-8.
+- Canonical record format: `<state>\t<normalized_repository_relative_path>\t<content_identity>`.
+- Canonical record separator: deterministic LF (`\n`) between records.
+- Path normalization: repository-relative with `/` separators and deterministic lexical sort.
+- `state` literals: `present` or `deleted`.
+- Present file `content_identity`: read-only Git object hash from `git hash-object --no-filters -- <path>` where available.
+- Deleted file `content_identity`: stable explicit sentinel `DELETED`.
+- Include authorized untracked new files in scope and hash them with the same read-only Git hashing method.
+
+Fingerprint scope is the union of:
+
+1. Current IMPLEMENTATION artifact declared product files.
+2. Actual product changed scope versus evaluation/task baseline.
+3. Authorized task-scope product file deltas (new/deleted/modified).
+
+Out-of-scope product changes must never be omitted from fingerprint scope and still follow existing scope/failure routing. Exclude orchestration-only observability artifacts (for example handoffs and world-state files) from fingerprint scope.
 
 ### Execution broker
 
 The delegated Verifier independently owns Gate 2 judgment but not command execution. The main Orchestrator brokers only exact repository-prescribed quality commands through its observed human approval boundary, captures canonical ledger evidence (`exact_executed_command`, working directory, `execution_result`, exit/result metadata, and permitted material per `output_handling`), and transfers that evidence to Verifier. It must not reinterpret failures, omit evidence, manufacture output, silently skip commands, or substitute its own Gate 2 verdict.
 
-Before Verifier delegation, Orchestrator must structurally validate current-ledger completeness and exact binding integrity (task/plan-or-intake/implementation/verification plus `required_command_set_source`).
+Before Verifier delegation, Orchestrator must structurally validate current-ledger completeness and exact binding integrity (task/plan-or-intake/implementation/verification, `required_command_set_source`, and all fingerprint binding fields).
 
-After Verifier returns, Orchestrator validates artifact/reference integrity only: every required `command_id` appears exactly once; no missing/duplicate/unknown/stale IDs; all four assessment fields are present (`command_id`, `evidence_quality`, `evidence_assessment`, `rationale`); and no canonical evidence recreation/overwrite appears. Compliant qualitative interpretation in `evidence_assessment`/`rationale` (for example, what evidence supports or fails to establish, or why evidence is sufficient/insufficient) is allowed and is not malformed. Orchestrator MUST reject actual duplication or reconstruction of authoritative canonical field values and any competing ledger. Orchestrator remains structural-only and does not judge interpretation correctness, evidence sufficiency, or Gate 2 verdict.
+After Verifier returns, Orchestrator validates structure only. Verifier output must be exactly one plain `VERIFICATION` artifact; output must begin with `VERIFICATION` and contain no preamble, epilogue, outside prose, Markdown fence, second root artifact, or competing artifact. Required command assessments must include every required `command_id` exactly once, with no missing, duplicate, unknown, or stale IDs. Each assessment must contain exactly `command_id`, `evidence_quality`, `evidence_assessment`, and `rationale`; `evidence_quality` must be exactly `sufficient` or `insufficient`. Canonical evidence ownership prohibition remains strict: do not recreate, overwrite, or reconstruct authoritative canonical field values and do not create a competing ledger.
 
-Permit one schema-only retry only when no product files changed. A second malformed artifact escalates. Never infer verdicts, reconstruct evidence, or blindly rerun after possibly changed implementation.
+Compliant qualitative interpretation in `evidence_assessment` and `rationale` (including words such as success, failure, absence, completeness, sufficiency, or insufficiency) is allowed and must not be treated as malformed by itself. Orchestrator remains structural-only and does not judge substantive reasoning quality, interpretation correctness, evidence sufficiency, or Gate 2 verdict quality.
+
+Malformed output uses deterministic structural defect codes:
+
+- `OUTSIDE_ARTIFACT_TEXT`: any text outside the single root `VERIFICATION` artifact, including preamble/epilogue/fence noise.
+- `MULTIPLE_ARTIFACTS`: more than one root artifact.
+- `MISSING_REQUIRED_FIELD`: required artifact field absent.
+- `INVALID_ENUM_LITERAL`: any enum literal outside allowed values (including `evidence_quality`).
+- `INVALID_ASSESSMENT_FIELD_SET`: assessment object has missing/extra fields or not exactly the required four-field set.
+- `MISSING_DUPLICATE_UNKNOWN_OR_STALE_COMMAND_ID`: required command IDs not matched exactly once.
+- `PROHIBITED_CANONICAL_RECONSTRUCTION`: reconstructed/duplicated authoritative canonical evidence fields or competing ledger content.
+
+Classification is deterministic and structural-only from emitted text; do not infer semantic intent. When malformed, no Gate 2 inference follows the malformed output.
+
+Allow one schema-only retry only when no product files changed and the bound implementation fingerprint is unchanged. Use the dedicated repair prompt for that retry. A second malformed artifact fails closed and escalates. Never infer verdicts, reconstruct evidence, or blindly rerun after possibly changed implementation.
+
+### Fingerprint lifecycle enforcement
+
+- After implementation and scope inspection, capture fingerprint and bind ledger before any brokered commands.
+- After commands and before Verifier delegation, recalculate fingerprint. On mismatch: mark current ledger stale, preserve history, do not delegate Verifier, and require fresh authorized verification after scope reconciliation.
+- Before schema-repair delegation, recalculate fingerprint. On mismatch: mark stale, do not repair, do not consume retry budget, fail closed.
+- After Verifier and before Gate 2 acceptance, recalculate fingerprint. On mismatch: preserve the returned Verifier artifact historically bound to its old fingerprint and do not accept its result for current content.
+- Before Reviewer delegation, recalculate fingerprint; Reviewer may consume only identity-stable Gate 2 accepted evidence.
+- After Reviewer and before Gate 3 acceptance, recalculate fingerprint. On mismatch: preserve the returned Reviewer artifact historically bound to its old fingerprint; do not accept Gate 3 or enter `CHANGE_COMPLETE` for current content.
+- Recovery/reuse checks always recalculate against the bound fingerprint; mismatch means no reuse and no no-change recovery.
+
+Fingerprint mismatch is structural evidence identity failure. Do not replace with semantic explanations. Mismatch invalidates current evidence as stale for current gate/reviewer/repair decisions and requires fresh authorized verification after scope reconciliation; unexpected drift routes to human/escalation. Legitimate implementer repair creates a new implementation iteration and new fingerprint binding.
 
 ### Sensitive output handling
 
@@ -179,12 +227,16 @@ Raise `HUMAN_INTENT_REQUIRED` only when evidence does not uniquely determine the
 
 Every implementation change, including one requested by Reviewer, routes `Implementer revision -> Verifier -> Gate 2 -> Reviewer`; never reviewer-direct approval after a change.
 
-Failure taxonomy: `PROFILE_UNAVAILABLE`, `INVOCATION_FAILED`, `MALFORMED_ARTIFACT`, `AGENT_LOOP_TIMEOUT_OR_LIMIT`, `TOOL_CAPABILITY_FAILURE`. Fail closed for unavailable mandatory profiles/capabilities; preserve state and artifacts on invocation failure; never infer a missing verdict. Permit one schema-only retry only when no product files changed; a second malformed artifact escalates. Preserve partial timeout evidence and do not blindly replay if files may have changed.
+Failure taxonomy: `PROFILE_UNAVAILABLE`, `INVOCATION_FAILED`, `MALFORMED_ARTIFACT`, `AGENT_LOOP_TIMEOUT_OR_LIMIT`, `TOOL_CAPABILITY_FAILURE`.
+
+`MALFORMED_ARTIFACT` for Gate 2 verifier outputs uses only the structural defect codes defined in Gate 2. Route schema repair through the dedicated verifier-schema repair prompt and preserve existing retry budget semantics: one no-product-change schema-only retry maximum; second malformed fails closed/escalates. If fingerprint changed before repair, do not consume retry budget.
+
+Fail closed for unavailable mandatory profiles/capabilities; preserve state and artifacts on invocation failure; never infer a missing verdict. Preserve partial timeout evidence and do not blindly replay if files may have changed.
 
 ## Artifact and context requirements
 
 - **IMPLEMENTATION:** plan version/FAST intake reference; iteration; `COMPLETED | HUMAN_INTENT_REQUIRED | BLOCKED`; steps implemented; changed files/purpose; tests; docs/config; commands actually run (passed/failed/not run); deviations; blockers; residual risks.
-- **VERIFICATION:** task ID; plan/intake version; implementation iteration; verification iteration; `PASSED | FAILED`; criteria checked; **Required command evidence assessments** (every required `command_id` exactly once with only `command_id`, `evidence_quality: sufficient | insufficient`, `evidence_assessment`, `rationale`); findings with both classifications; environment limitations; residual risks. Verifier output may qualitatively interpret reviewed canonical evidence only through `evidence_assessment` and `rationale` while referring to `command_id`. This interpretation is non-authoritative and must not restate, reconstruct, or create a competing authoritative representation of canonical field values, including exact commands, working directories, execution results, exit-code values, raw/minimal output excerpts, `output_handling`, `permitted_evidence_material`, protected references, missing canonical values, or another ledger.
+- **VERIFICATION:** task ID; plan/intake version; implementation iteration; verification iteration; `PASSED | FAILED`; criteria checked; **Required command evidence assessments** (every required `command_id` exactly once with only `command_id`, `evidence_quality: sufficient | insufficient`, `evidence_assessment`, `rationale`); findings with both classifications; environment limitations; residual risks. Response begins with exactly one plain `VERIFICATION` artifact and contains no outside text or second root artifact. Verifier output may qualitatively interpret reviewed canonical evidence only through `evidence_assessment` and `rationale` while referring to `command_id`. This interpretation is non-authoritative and must not restate, reconstruct, or create a competing authoritative representation of canonical field values, including exact commands, working directories, execution results, exit-code values, raw/minimal output excerpts, `output_handling`, `permitted_evidence_material`, protected references, missing canonical values, or another ledger.
 - **IMPLEMENTATION REVIEW:** plan version; iteration; `APPROVED | CHANGES REQUESTED`; evidence reviewed; blocking findings; scope; correctness/compatibility/tests/docs assessment; residual risks.
 
 Pass only needed context: Implementer gets the plan/FAST intake, human decisions, relevant repository context, and repair findings; Verifier gets plan/intake, actual scope, implementation artifact, current context, acceptance criteria, and task-scoped read-only review context containing relevant current canonical records plus permitted evidence material (not only IDs); Reviewer gets approved plan, actual scope/diff, implementation and verification artifacts, and relevant source/tests/docs. Artifacts are concise, self-contained, evidence-linked, explicit about unknown/unrun/failed evidence, and free of transcript copying.

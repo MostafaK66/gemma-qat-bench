@@ -67,9 +67,17 @@ Do not pass chat transcripts by default. Give Implementer only current plan/FAST
 
 Verifier owns the exact `PASSED | FAILED` verdict, not the Orchestrator. A pass requires the complete concrete evidence described in `.context/AGENT-ROLES.md`; absent, unsuccessful, incomplete, or unverifiable required command evidence is `FAILED`. Record finding kind separately from `EVIDENCE_RESOLVABLE | HUMAN_INTENT_REQUIRED`; route environment/tooling failures to `AWAITING_ENVIRONMENT_RESOLUTION` rather than treating them as intent.
 
-The Verifier is production read/search-only: no terminal/get-output, edit tools, Git mutation, or delegation. The main Orchestrator may broker only exact repository-prescribed verification commands through its observable JetBrains approval boundary and maintain the task-scoped canonical ledger using exact labels `required_command_set_source`, `exact_executed_command`, `execution_result`, `output_handling`, and `permitted_evidence_material`. Authoritative ledger binding/field requirements, sensitive-output handling, and pre/post-verifier validation rules live in `.context/AGENT-ROLES.md` and must be followed exactly.
+The Verifier is production read/search-only: no terminal/get-output, edit tools, Git mutation, or delegation. The main Orchestrator may broker only exact repository-prescribed verification commands through its observable JetBrains approval boundary and maintain the task-scoped canonical ledger using exact labels `required_command_set_source`, `exact_executed_command`, `execution_result`, `output_handling`, and `permitted_evidence_material`.
 
-Composition boundary: skill-level guidance remains summary-only. Do not introduce typed Python schemas, machine-authoritative V2 state machines, or SDK-enforced authority here.
+Gate 2 binding must include `implementation_fingerprint_algorithm`, `implementation_fingerprint`, `implementation_fingerprint_scope`, and `implementation_fingerprint_captured_at` using `implementation-fingerprint-v1` semantics from `.context/AGENT-ROLES.md`.
+
+Lifecycle is mandatory: capture/bind fingerprint after implementation scope inspection and before commands; recalculate at each required pre/post gate checkpoint; any mismatch marks evidence stale, blocks current verifier/reviewer/repair acceptance, and requires fresh authorized verification after scope reconciliation.
+
+Orchestrator post-verifier validation is structural-only. Require exactly one plain `VERIFICATION` artifact beginning the response, no outside text/second root, every required command ID exactly once, each assessment exactly `command_id|evidence_quality|evidence_assessment|rationale`, enum-limited `evidence_quality`, and no canonical reconstruction/competing ledger.
+
+Use only these malformed structural defect codes: `OUTSIDE_ARTIFACT_TEXT`, `MULTIPLE_ARTIFACTS`, `MISSING_REQUIRED_FIELD`, `INVALID_ENUM_LITERAL`, `INVALID_ASSESSMENT_FIELD_SET`, `MISSING_DUPLICATE_UNKNOWN_OR_STALE_COMMAND_ID`, `PROHIBITED_CANONICAL_RECONSTRUCTION`. Deterministic structural classification only; no Gate 2 inference from malformed output.
+
+Route the single no-product-change schema-only retry through `.context/prompts/repair-verification-schema.prompt.md` and require unchanged fingerprint before repair. Second malformed artifact fails closed/escalates. Do not reconstruct canonical evidence or substitute Orchestrator substantive judgment.
 
 ### Gate 3 and repair ordering
 
@@ -87,7 +95,7 @@ Keep Planner and implementation budgets separate. The implementation budget is `
 
 Raise `HUMAN_INTENT_REQUIRED` only for non-unique evidence plus materially consequential alternative behavior/scope. Consolidate questions and never let Implementer patch an approved plan silently.
 
-For `PROFILE_UNAVAILABLE`, `INVOCATION_FAILED`, `MALFORMED_ARTIFACT`, `AGENT_LOOP_TIMEOUT_OR_LIMIT`, and `TOOL_CAPABILITY_FAILURE`, preserve state/evidence, never infer missing verdicts, and fail closed where mandatory. Allow at most one schema-only retry when no product file changed; second malformed output escalates. Never blindly replay a timed-out phase when implementation files may have changed.
+For `PROFILE_UNAVAILABLE`, `INVOCATION_FAILED`, `MALFORMED_ARTIFACT`, `AGENT_LOOP_TIMEOUT_OR_LIMIT`, and `TOOL_CAPABILITY_FAILURE`, preserve state/evidence, never infer missing verdicts, and fail closed where mandatory. Allow at most one schema-only retry only when no product file changed and the fingerprint remains unchanged; second malformed output escalates. Never blindly replay a timed-out phase when implementation files may have changed.
 
 ## Completion and handoff
 

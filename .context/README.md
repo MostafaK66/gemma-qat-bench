@@ -48,6 +48,7 @@ repository-root/
 │       ├── implement.prompt.md
 │       ├── verify.prompt.md
 │       ├── review-implementation.prompt.md
+│       ├── repair-verification-schema.prompt.md
 │       ├── new-project.prompt.md
 │       ├── implement-feature.prompt.md
 │       ├── refactor.prompt.md

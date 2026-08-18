@@ -58,17 +58,43 @@ The production Verifier is read/search-only and receives no `run_in_terminal`, `
 
 Use the canonical V2 evidence labels exactly: `required_command_set_source`, `exact_executed_command`, `execution_result`, `output_handling`, and `permitted_evidence_material`.
 
-Maintain one Orchestrator-owned task-scoped local/gitignored ledger per verification attempt, bound to task ID, plan version/FAST intake reference, implementation iteration, verification iteration, and `required_command_set_source`. Each stable `CMD-001` record includes `command_id`, character-for-character `exact_executed_command`, working directory, `execution_result`, exit code, required flag, `output_handling`, `permitted_evidence_material`, and `required_command_rationale_or_source`. A new implementation iteration requires a new ledger; prior implementation evidence cannot satisfy the new Gate 2 attempt.
+Maintain one Orchestrator-owned task-scoped local/gitignored ledger per verification attempt, bound to task ID, plan version/FAST intake reference, implementation iteration, verification iteration, `required_command_set_source`, `implementation_fingerprint_algorithm`, `implementation_fingerprint`, `implementation_fingerprint_scope`, and `implementation_fingerprint_captured_at`. Each stable `CMD-001` record includes `command_id`, character-for-character `exact_executed_command`, working directory, `execution_result`, exit code, required flag, `output_handling`, `permitted_evidence_material`, and `required_command_rationale_or_source`. A new implementation iteration requires a new ledger; prior implementation evidence cannot satisfy the new Gate 2 attempt.
 
-Before delegating Verifier, structurally validate ledger completeness and exact current bindings including `required_command_set_source`.
+`implementation-fingerprint-v1` is mandatory: SHA-256 over UTF-8 canonical manifest records `<state>\t<normalized_repository_relative_path>\t<content_identity>` with deterministic LF separators, `/`-normalized sorted relative paths, `present|deleted` state, present content identity from read-only Git `git hash-object --no-filters -- <path>` where available, deleted sentinel `DELETED`, and inclusion of authorized untracked new files. Scope is the union of IMPLEMENTATION-declared product files, actual product changed scope vs evaluation/task baseline, and authorized task-scope product new/deleted/modified files. Out-of-scope product changes must never be omitted and still follow existing scope/failure routing. Exclude handoff/world-state observability files.
 
-After Verifier returns, validate artifact/reference integrity only: every required `command_id` appears exactly once; no missing/duplicate/unknown/stale IDs; all required assessment fields exist (`command_id`, `evidence_quality`, `evidence_assessment`, `rationale`); and no canonical evidence recreation/overwrite appears. Treat compliant qualitative interpretation in `evidence_assessment`/`rationale` as non-malformed (for example, support/failure-to-establish, completeness/absence, sufficiency/insufficiency explanations tied to `command_id`). Orchestrator MUST reject actual duplication or reconstruction of authoritative canonical field values and any competing ledger. Do not determine interpretation correctness, evidence sufficiency, or Gate 2 verdict.
+Lifecycle enforcement is mandatory:
 
-Allow one schema-only retry only when no product files changed; second malformed artifact escalates. Never infer verdicts, reconstruct evidence, or blindly rerun verification after possibly changed implementation.
+1. After implementation/scope inspection, capture fingerprint and bind ledger before brokered commands.
+2. After commands and pre-Verifier, recalculate; mismatch => mark ledger stale, preserve history, do not delegate Verifier, reconcile scope, then run fresh authorized verification.
+3. Pre-schema-repair, recalculate; mismatch => stale, no repair, no retry consumption, fail closed.
+4. Post-Verifier pre-Gate-2-acceptance, recalculate; mismatch => do not accept result.
+5. Pre-Reviewer, recalculate; Reviewer only consumes identity-stable Gate-2-accepted evidence.
+6. Post-Reviewer pre-Gate-3-acceptance, recalculate; mismatch => do not accept change complete.
+7. Any reuse/recovery path must recalculate against bound fingerprint; mismatch => no reuse/no no-change recovery.
 
-Sensitive policy: do not persist full stdout/stderr by default. Persist only minimal exact character-preserving non-sensitive excerpts or supplied protected references. For suspected-sensitive output, never persist raw sensitive content in prompts/artifacts; record `output_handling: WITHHELD_SENSITIVE` plus a non-sensitive reason. Do not use free-form LLM redaction as authoritative raw evidence, and never invent opaque references. If a command embeds secrets, require a safe equivalent or human resolution. Withholding alone is not a Gate 2 verdict, but insufficient remaining permitted evidence cannot support `PASSED`.
+Fingerprint mismatch is structural evidence identity failure only. Do not substitute semantic explanations. Treat mismatched evidence as stale historical evidence, invalid for current gate/reviewer/repair; unexpected drift escalates to human.
 
-V2 preserves independent verification judgment, not fully independent verification execution. Do not claim SDK-enforced least privilege equivalence.
+Before delegating Verifier, structurally validate ledger completeness and exact current bindings including required fingerprint fields.
+
+After Verifier returns, perform structural validation only. Accept only exactly one plain `VERIFICATION` artifact that begins the response, with no preamble/epilogue/outside prose/Markdown fence/second root. Ensure every required `command_id` appears exactly once with no missing/duplicate/unknown/stale IDs. Ensure each assessment has exactly `command_id`, `evidence_quality`, `evidence_assessment`, `rationale`; `evidence_quality` must be exactly `sufficient|insufficient`.
+
+Canonical evidence ownership prohibition remains strict: reject reconstruction/duplication/overwrite of authoritative canonical values and any competing ledger.
+
+Compliant qualitative language belongs only in `evidence_assessment`/`rationale`; terms including success/failure/absence/completeness/sufficiency/insufficiency are valid there and are not malformed by themselves. Orchestrator must not judge substantive quality, reasoning quality, evidence sufficiency, or verdict correctness.
+
+When malformed, classify deterministically using only:
+
+- `OUTSIDE_ARTIFACT_TEXT`
+- `MULTIPLE_ARTIFACTS`
+- `MISSING_REQUIRED_FIELD`
+- `INVALID_ENUM_LITERAL`
+- `INVALID_ASSESSMENT_FIELD_SET`
+- `MISSING_DUPLICATE_UNKNOWN_OR_STALE_COMMAND_ID`
+- `PROHIBITED_CANONICAL_RECONSTRUCTION`
+
+Malformed output never yields Gate 2 inference.
+
+Allow one schema-only retry only when no product files changed and fingerprint remains unchanged, using `.context/prompts/repair-verification-schema.prompt.md`. Second malformed output fails closed and escalates.
 
 ## Revisions, human intent, and failure routing
 
@@ -82,11 +108,11 @@ Every implementation change, including a reviewer-requested repair, routes:
 Implementer revision -> Verifier -> Gate 2 -> Reviewer
 ```
 
-Handle `PROFILE_UNAVAILABLE`, `INVOCATION_FAILED`, `MALFORMED_ARTIFACT`, `AGENT_LOOP_TIMEOUT_OR_LIMIT`, and `TOOL_CAPABILITY_FAILURE` per the authoritative contract: preserve evidence/state, fail closed where mandatory, never infer an approval, allow only one no-product-change schema retry, and do not blindly replay possibly changed implementation.
+Handle `PROFILE_UNAVAILABLE`, `INVOCATION_FAILED`, `MALFORMED_ARTIFACT`, `AGENT_LOOP_TIMEOUT_OR_LIMIT`, and `TOOL_CAPABILITY_FAILURE` per the authoritative contract: preserve evidence/state, fail closed where mandatory, never infer an approval, allow only one no-product-change schema retry with unchanged fingerprint, and do not blindly replay possibly changed implementation.
 
 ## Context, artifacts, and final output
 
-Minimize specialist context and require the exact IMPLEMENTATION, VERIFICATION, and IMPLEMENTATION REVIEW fields in the authoritative contract/template. For Verifier, pass task-scoped read-only review context containing relevant current canonical records plus permitted evidence material (not only IDs). Verifier must inspect but neither own nor persist/modify/execute/reconstruct the ledger. Verifier artifacts may use only `evidence_assessment` and `rationale` for qualitative interpretation tied to `command_id`, and must not reproduce authoritative canonical values (`required_command_set_source`, `exact_executed_command`, working directories, `execution_result`, exit codes, raw/minimal output excerpts, `output_handling`, `permitted_evidence_material`, protected references, or missing canonical values) or create a competing ledger.
+Minimize specialist context and require the exact IMPLEMENTATION, VERIFICATION, and IMPLEMENTATION REVIEW fields in the authoritative contract/template. For Verifier, pass task-scoped read-only review context containing relevant current canonical records plus permitted evidence material (not only IDs) and fingerprint binding fields (`implementation_fingerprint_algorithm`, `implementation_fingerprint`, `implementation_fingerprint_scope`, `implementation_fingerprint_captured_at`). Verifier must inspect but neither own nor persist/modify/execute/reconstruct the ledger. Verifier artifacts may use only `evidence_assessment` and `rationale` for qualitative interpretation tied to `command_id`, and must not reproduce authoritative canonical values (`required_command_set_source`, `exact_executed_command`, working directories, `execution_result`, exit codes, raw/minimal output excerpts, `output_handling`, `permitted_evidence_material`, protected references, or missing canonical values) or create a competing ledger.
 
 At `CHANGE_COMPLETE`, persist usage accounting and `FINAL COMMIT-PREPARATION SUMMARY`. It means workflow completion and human handoff readiness only—not staging, committing, pushing, merging, or deploying. Never invoke version-control preparation automatically; it requires later explicit human intent and independent Git inspection.
 

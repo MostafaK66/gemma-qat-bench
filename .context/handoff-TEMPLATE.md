@@ -209,6 +209,53 @@ plan_version_or_fast_intake_reference:
 implementation_iteration:
 verification_iteration:
 required_command_set_source:
+implementation_fingerprint_algorithm:
+implementation_fingerprint:
+implementation_fingerprint_scope:
+implementation_fingerprint_captured_at:
+```
+
+### Fingerprint/check observability
+
+```text
+stale_evidence_invalidation_history:
+- affected_attempt_or_artifact:
+  bound_fingerprint:
+  observed_fingerprint:
+  detected_at:
+  action_taken:
+
+fingerprint_check_events:
+- event: post-implementation-scope-pre-commands
+  check_time:
+  fingerprint_value:
+  result: match | mismatch | not_run
+  stale_invalidation_applied:
+- event: post-commands-pre-verifier
+  check_time:
+  fingerprint_value:
+  result: match | mismatch | not_run
+  stale_invalidation_applied:
+- event: pre-schema-repair
+  check_time:
+  fingerprint_value:
+  result: match | mismatch | not_run
+  stale_invalidation_applied:
+- event: post-verifier-pre-gate-2-acceptance
+  check_time:
+  fingerprint_value:
+  result: match | mismatch | not_run
+  stale_invalidation_applied:
+- event: pre-reviewer
+  check_time:
+  fingerprint_value:
+  result: match | mismatch | not_run
+  stale_invalidation_applied:
+- event: post-reviewer-pre-gate-3-acceptance
+  check_time:
+  fingerprint_value:
+  result: match | mismatch | not_run
+  stale_invalidation_applied:
 ```
 
 ### Canonical command ledger records
@@ -255,11 +302,26 @@ Environment limitations:
 Residual risks:
 ```
 
-Verifier artifact constraint: include every required `command_id` exactly once in `Required command evidence assessments`. Include only `command_id`, `evidence_quality`, `evidence_assessment`, and `rationale`; do not reproduce canonical evidence fields (`required_command_set_source`, `exact_executed_command`, `execution_result`, `output_handling`, `permitted_evidence_material`) or protected references. Qualitative interpretation is allowed only in `evidence_assessment`/`rationale` tied to `command_id` (for example, support/failure-to-establish, completeness/absence, sufficiency/insufficiency explanations) and remains non-authoritative; do not duplicate/reconstruct canonical values (including working directories, exit codes, raw/minimal output excerpts, missing canonical values) or create a competing ledger.
+Verifier artifact constraint: response begins with exactly one plain `VERIFICATION` artifact and contains no preamble, epilogue, Markdown fence, outside text, or second root artifact. Include every required `command_id` exactly once in `Required command evidence assessments`. Include only `command_id`, `evidence_quality`, `evidence_assessment`, and `rationale`; `evidence_quality` is exactly `sufficient` or `insufficient`. Do not reproduce canonical evidence fields (`required_command_set_source`, `exact_executed_command`, `execution_result`, `output_handling`, `permitted_evidence_material`) or protected references. Qualitative interpretation is allowed only in `evidence_assessment`/`rationale` tied to `command_id` (for example, support/failure-to-establish, completeness/absence, sufficiency/insufficiency explanations) and remains non-authoritative; do not duplicate/reconstruct canonical values (including working directories, exit codes, raw/minimal output excerpts, missing canonical values) or create a competing ledger.
 
-| Verification iteration | Gate 2 verdict | Finding kinds / resolution classes | Resulting state |
-| --- | --- | --- | --- |
-|  |  |  |  |
+### Verifier malformed artifact classification and repair tracking
+
+```text
+malformed_artifact_defects:
+- OUTSIDE_ARTIFACT_TEXT
+- MULTIPLE_ARTIFACTS
+- MISSING_REQUIRED_FIELD
+- INVALID_ENUM_LITERAL
+- INVALID_ASSESSMENT_FIELD_SET
+- MISSING_DUPLICATE_UNKNOWN_OR_STALE_COMMAND_ID
+- PROHIBITED_CANONICAL_RECONSTRUCTION
+
+schema_repair_attempted:
+schema_repair_prompt:
+schema_repair_result: not_applicable | succeeded | failed_malformed | blocked_fingerprint_mismatch
+schema_repair_retry_budget_consumed:
+second_malformed_escalated:
+```
 
 ## Gate 3 history — implementation review
 
@@ -298,7 +360,7 @@ Residual risks:
 | --- | --- | --- | --- | --- |
 | `PROFILE_UNAVAILABLE` |  |  |  | fail closed |
 | `INVOCATION_FAILED` |  |  |  | preserve; do not skip role |
-| `MALFORMED_ARTIFACT` |  |  |  | one schema-only retry only if no product files changed; second escalates |
+| `MALFORMED_ARTIFACT` |  |  |  | one schema-only retry only if no product files changed and fingerprint unchanged; second escalates |
 | `AGENT_LOOP_TIMEOUT_OR_LIMIT` |  |  |  | preserve partial evidence; do not blindly replay changed files |
 | `TOOL_CAPABILITY_FAILURE` |  |  |  | fail closed when mandatory |
 
