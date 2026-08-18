@@ -76,3 +76,9 @@ packages = ["gemma_qat_bench"]
 mypy_path = "src"
 strict = true
 warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+# The Codex SDK is the optional v3-codex extra; the strict gate must pass in
+# the documented dev environment where it is not installed.
+module = "openai_codex"
+ignore_missing_imports = true
