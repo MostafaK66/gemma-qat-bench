@@ -12,6 +12,7 @@ from .domain import (
     ArtifactDefect,
     ArtifactKind,
     ArtifactValidationResult,
+    DomainError,
     EvidenceQuality,
     Gate1Verdict,
     Gate2Verdict,
@@ -210,11 +211,18 @@ def _decode_single_object(
             DefectCode.OUTSIDE_ARTIFACT_TEXT,
             f"response does not start with one JSON artifact: {exc.msg}",
         )
+    except RecursionError:
+        # Pathologically nested provider output must fail closed as a
+        # malformed artifact, never crash the deterministic orchestrator.
+        return None, _defect(
+            DefectCode.OUTSIDE_ARTIFACT_TEXT,
+            "artifact nesting depth exceeds the safe parsing limit",
+        )
     remainder = stripped[end:].strip()
     if remainder:
         try:
             decoder.raw_decode(remainder)
-        except (JSONDecodeError, _DuplicateField):
+        except (JSONDecodeError, _DuplicateField, RecursionError):
             return None, _defect(
                 DefectCode.OUTSIDE_ARTIFACT_TEXT,
                 "non-whitespace text follows the JSON artifact",
@@ -250,18 +258,18 @@ def _check_field_set(
 
 
 def _contains_prohibited_key(value: Any) -> str | None:
-    if isinstance(value, dict):
-        for key, nested in value.items():
-            if key in _PROHIBITED_CANONICAL_KEYS:
-                return str(key)
-            found = _contains_prohibited_key(nested)
-            if found:
-                return found
-    elif isinstance(value, list):
-        for nested in value:
-            found = _contains_prohibited_key(nested)
-            if found:
-                return found
+    # Iterative traversal: parsed depth is bounded only by the decoder's own
+    # recursion budget, so a recursive scan could overflow on valid input.
+    pending: list[Any] = [value]
+    while pending:
+        current = pending.pop()
+        if isinstance(current, dict):
+            for key, nested in current.items():
+                if key in _PROHIBITED_CANONICAL_KEYS:
+                    return str(key)
+                pending.append(nested)
+        elif isinstance(current, list):
+            pending.extend(current)
     return None
 
 
@@ -624,6 +632,12 @@ def validate_artifact(
         defect = _defect(
             DefectCode.MISSING_DUPLICATE_UNKNOWN_OR_STALE_COMMAND_ID, str(exc)
         )
+        return ArtifactValidationResult(kind, False, None, (defect,))
+    except DomainError as exc:
+        # Domain invariants (for example task-ID character rules) are field
+        # value defects, not enum literal defects; DomainError subclasses
+        # ValueError so it must be classified before the enum branch.
+        defect = _defect(DefectCode.INVALID_FIELD_TYPE, str(exc))
         return ArtifactValidationResult(kind, False, None, (defect,))
     except ValueError as exc:
         defect = _defect(DefectCode.INVALID_ENUM_LITERAL, str(exc))

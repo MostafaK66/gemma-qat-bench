@@ -131,6 +131,34 @@ def test_command_ids_match_current_set_exactly_once(
     )
 
 
+@pytest.mark.parametrize(
+    "raw",
+    [
+        "[" * 100_000,
+        '{"task_id":' * 50_000 + "1" + "}" * 50_000,
+    ],
+)
+def test_pathological_nesting_is_a_defect_not_a_crash(raw: str) -> None:
+    """Regression: deeply nested provider output raised RecursionError through
+    validate_artifact instead of failing closed as a malformed artifact."""
+    result = validate_artifact(ArtifactKind.PLAN, raw)
+    assert not result.valid
+    assert result.defects[0].code == DefectCode.OUTSIDE_ARTIFACT_TEXT.value
+
+
+def test_domain_invariant_violation_is_a_field_defect_not_an_enum_defect() -> None:
+    """Regression: a task_id violating the domain character rule was reported
+    with the unrelated INVALID_ENUM_LITERAL defect code."""
+    value = verification(task_id="bad id!")
+    result = validate_artifact(
+        ArtifactKind.VERIFICATION,
+        json.dumps(value),
+        expected_command_ids=("CMD-001",),
+    )
+    assert not result.valid
+    assert result.defects[0].code == DefectCode.INVALID_FIELD_TYPE.value
+
+
 def test_provider_schema_is_closed_and_command_bound() -> None:
     schema = artifact_json_schema(
         ArtifactKind.VERIFICATION, expected_command_ids=("CMD-001",)
