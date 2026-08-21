@@ -27,13 +27,6 @@ models/
 results/
 third_party/
 
-# Agent personal working state (shared templates/prompts/skills remain tracked)
-.context/world-state.md
-.context/private/
-.context/session-notes/
-.context/.onboarding-complete
-.context/*-backup.md
-
 # IDE per-user state (shared run configs live in .run/, which is committed)
 .idea/
 .vscode/
